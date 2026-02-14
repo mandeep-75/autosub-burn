@@ -1,0 +1,44 @@
+# --- Project Specifics ---
+# Local tools and compiled binaries
+tools/ffmpeg
+tools/whisper.cpp/
+ffmpeg
+ffprobe
+
+# AI Models (Very Large)
+*.bin
+models/
+
+# Temporary files created by the script
+temp_audio.wav
+temp_audio.wav.srt
+final_hinglish.srt
+*_burned.mov
+*_subbed.mov
+*_final.mov
+
+# --- Python Environment ---
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+env/
+venv/
+ENV/
+
+# --- macOS System Files ---
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+# Videos
+*.mov
+*.MOV
+*.mp4
+*.wav
+
+# Folders
+tools/
+venv/
+__pycache__/
