@@ -3,6 +3,11 @@ import sys
 import os
 import whisper
 import subprocess
+import gc
+try:
+    import torch
+except ImportError:
+    torch = None
 from utils import generate_srt_content, AVAILABLE_FONTS
 
 # --- CONFIG ---
@@ -48,6 +53,15 @@ def main():
     # fp16=False for CPU compatibility if needed, though CLI usually runs on whatever torch supports.
     # explicit fp16=False is safer for M1/M2 CPU fallback if GPU isn't picked up correctly, or just to be safe.
     result = model.transcribe(args.video_path, word_timestamps=True, verbose=True, fp16=False)
+    
+    # Unload Model immediately to free memory for video processing
+    del model
+    if torch is not None:
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        elif hasattr(torch, "mps") and torch.mps.is_available():
+            torch.mps.empty_cache()
+    gc.collect()
     
     print("✍️ Generating Subtitles...")
     srt_content = generate_srt_content(

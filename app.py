@@ -27,7 +27,12 @@ else:
     FFMPEG_PATH = "ffmpeg" # Fallback hope
 
 
-@st.cache_resource
+import gc
+try:
+    import torch
+except ImportError:
+    torch = None
+
 def load_whisper_model(model_name="base"):
     return whisper.load_model(model_name)
 
@@ -112,6 +117,16 @@ if uploaded_file is not None:
 
                 model = load_whisper_model(model_size)
                 result = model.transcribe(temp_audio, word_timestamps=True, fp16=False)
+                
+                # Unload Model immediately
+                del model
+                if torch is not None:
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
+                    elif hasattr(torch, "mps") and torch.mps.is_available():
+                        torch.mps.empty_cache()
+                gc.collect()
+
                 st.session_state['transcription_result'] = result
                 st.success("Transcription Complete!")
                 
