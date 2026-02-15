@@ -186,7 +186,8 @@ if uploaded_file is not None:
         st.subheader("Step 3: Burn Subtitles to Video")
         
         if st.button("🔥 Create Final Video"):
-            output_video_path = video_path.replace(".mov", "_subbed.mov")
+            base, ext = os.path.splitext(video_path)
+            output_video_path = f"{base}_subbed{ext}"
             
             with st.spinner("Burning subtitles using Hardware Acceleration..."):
                 try:
@@ -227,11 +228,14 @@ if uploaded_file is not None:
                     subs.save(ass_path)
 
                     # 3. Burn with FFmpeg
+                    # Escape the path for the 'ass' filter (standard ffmpeg filter escaping)
+                    escaped_ass_path = ass_path.replace("\\", "/").replace(":", "\\:").replace("'", "\\'")
+                    
                     cmd = [
                         FFMPEG_PATH, "-y", 
                         "-i", video_path, 
-                        "-vf", f"ass='{ass_path}'",
-                        "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23",
+                        "-vf", f"ass='{escaped_ass_path}'",
+                        "-c:v", "h264_videotoolbox", "-b:v", "8M", "-realtime", "1",
                         "-c:a", "copy",
                         output_video_path
                     ]
