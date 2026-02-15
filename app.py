@@ -1,17 +1,31 @@
 import streamlit as st
 import whisper
 import os
+import shutil
 import subprocess
+import pysubs2
 from tempfile import NamedTemporaryFile
 from utils import generate_srt_content, AVAILABLE_FONTS
 
 # --- CONFIG ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TOOLS_DIR = os.path.join(BASE_DIR, "tools")
-FFMPEG_PATH = os.path.join(TOOLS_DIR, "ffmpeg")
 
-# Add local FFmpeg to PATH so Whisper can use it
+# Ensure tools dir exists in path
 os.environ["PATH"] = f"{TOOLS_DIR}:{os.environ.get('PATH', '')}"
+
+# Robust FFmpeg finding
+SYSTEM_FFMPEG = shutil.which("ffmpeg")
+LOCAL_FFMPEG = os.path.join(TOOLS_DIR, "ffmpeg")
+
+# Prefer system ffmpeg if available, otherwise local
+if SYSTEM_FFMPEG:
+    FFMPEG_PATH = SYSTEM_FFMPEG
+elif os.path.exists(LOCAL_FFMPEG):
+    FFMPEG_PATH = LOCAL_FFMPEG
+else:
+    FFMPEG_PATH = "ffmpeg" # Fallback hope
+
 
 @st.cache_resource
 def load_whisper_model(model_name="base"):
@@ -26,7 +40,7 @@ st.markdown("Automated captions with **Roman Hindi/Punjabi** transliteration and
 # Sidebar Configuration
 with st.sidebar:
     st.header("⚙️ Settings")
-    model_size = st.selectbox("Whisper Model", ["tiny", "base", "small", "medium", "large-v3", "turbo"], index=4)
+    model_size = st.selectbox("Whisper Model", ["tiny", "base", "small", "medium", "large", "large-v3", "large-v3-turbo"], index=1)
     st.divider()
     
     st.subheader("📏 Line & Font")
@@ -43,6 +57,12 @@ with st.sidebar:
     font_keys = list(AVAILABLE_FONTS.keys())
     base_font = st.selectbox("Base Font", font_keys, index=0)
     highlight_font = st.selectbox("Highlight Font", font_keys, index=1)
+    
+    st.divider()
+    st.subheader("📍 Position")
+    y_padding = st.slider("Vertical Padding (Y)", 0, 1000, 50, help="Distance from bottom edge")
+    alignment_option = st.selectbox("Alignment", ["Center", "Left", "Right"], index=0)
+    x_padding = st.slider("Horizontal Padding (X)", 0, 500, 20, help="Distance from left/right edge")
     
     st.markdown("**Randomization (Experimental)**")
     random_base = st.checkbox("Randomize Base Font (Chaotic!)")
@@ -156,37 +176,64 @@ if uploaded_file is not None:
             output_video_path = video_path.replace(".mov", "_subbed.mov")
             
             with st.spinner("Burning subtitles using Hardware Acceleration..."):
-                # Style logic
-                def hex_to_ass(hex_color):
-                    hex_color = hex_color.lstrip('#')
-                    return f"&H{hex_color[4:6]}{hex_color[2:4]}{hex_color[0:2]}"
-                
-                ass_base = hex_to_ass(base_color)
-                # Resolve technical font name for the global style
-                tech_base_font = AVAILABLE_FONTS.get(base_font, 'Arial')
-                
-                style = f"FontName={tech_base_font},FontSize={font_size},PrimaryColour={ass_base},OutlineColour=&H000000,BorderStyle=1,Outline=2,Shadow=0,MarginV=50,Alignment=2"
-                
-                filter_str = f"subtitles=filename='{srt_path}':force_style='{style}'"
-                
-                cmd = [
-                    FFMPEG_PATH, "-y", 
-                    "-i", video_path, 
-                    "-vf", filter_str,
-                    "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23",
-                    "-c:a", "copy",
-                    output_video_path
-                ]
-                
                 try:
+                    # 1. Convert SRT to ASS using pysubs2 for better styling control
+                    subs = pysubs2.load(srt_path, encoding="utf-8")
+                    
+                    # 2. Define the style
+                    def hex_to_ass(hex_color):
+                        # Streamlit returns #RRGGBB, ASS wants &H00BBGGRR (ABGR)
+                        hex_color = hex_color.lstrip('#')
+                        r, g, b = hex_color[0:2], hex_color[2:4], hex_color[4:6]
+                        return f"&H00{b}{g}{r}"
+
+                    ass_base_color = hex_to_ass(base_color)
+                    tech_base_font = AVAILABLE_FONTS.get(base_font, 'Arial')
+                    align_map = {"Center": 2, "Left": 1, "Right": 3}
+                    
+                    style = pysubs2.SSAStyle(
+                        fontname=tech_base_font,
+                        fontsize=font_size,
+                        primarycolor=ass_base_color,
+                        outlinecolor="&H00000000",
+                        backcolor="&H00000000",
+                        borderstyle=1,
+                        outline=2,
+                        shadow=0,
+                        alignment=align_map[alignment_option],
+                        marginv=y_padding,
+                        marginl=x_padding,
+                        marginr=x_padding
+                    )
+                    
+                    # Apply style to all events? No, just set as Default
+                    subs.styles["Default"] = style
+                    
+                    # Save as ASS
+                    ass_path = video_path + ".ass"
+                    subs.save(ass_path)
+
+                    # 3. Burn with FFmpeg
+                    cmd = [
+                        FFMPEG_PATH, "-y", 
+                        "-i", video_path, 
+                        "-vf", f"ass='{ass_path}'",
+                        "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23",
+                        "-c:a", "copy",
+                        output_video_path
+                    ]
+                    
                     # Run and capture output
                     subprocess.run(cmd, check=True, capture_output=True)
                     
                     st.success("Video Created Successfully!")
                     st.video(output_video_path)
                     
+                    # 4. Download
                     with open(output_video_path, "rb") as v_file:
-                        st.download_button("⬇️ Download Final Video", v_file, file_name="final_video.mov")
+                        st.download_button("⬇️ Download Final Video", v_file.read(), file_name="final_video.mov")
                         
                 except subprocess.CalledProcessError as e:
-                    st.error("FFmpeg Error: " + e.stderr.decode())
+                    st.error(f"FFmpeg Error: {e.stderr.decode() if e.stderr else str(e)}")
+                except Exception as e:
+                    st.error(f"An error occurred: {str(e)}")

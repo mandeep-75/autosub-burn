@@ -115,8 +115,25 @@ def generate_srt_content(
         def resolve_font(name):
             return AVAILABLE_FONTS.get(name, 'Arial')
 
-        current_base_font = get_random_tech_font() if random_base else resolve_font(base_font)
+
         
+        # Pre-calculate fonts for each word to ensure consistency across karaoke frames
+        word_base_fonts = []
+        word_highlight_fonts = []
+        
+        for _ in words:
+            # Base Font for this word
+            if random_base:
+                word_base_fonts.append(get_random_tech_font())
+            else:
+                word_base_fonts.append(resolve_font(base_font))
+                
+            # Highlight Font for this word
+            if random_highlight:
+                word_highlight_fonts.append(get_random_tech_font())
+            else:
+                word_highlight_fonts.append(resolve_font(highlight_font))
+
         # Determine highlighting
         if use_karaoke:
             for i, current_word in enumerate(words):
@@ -125,14 +142,14 @@ def generate_srt_content(
                 
                 line_parts = []
                 for j, word_text in enumerate(processed_words_text):
-                    current_highlight_font = get_random_tech_font() if random_highlight else resolve_font(highlight_font)
-                    
                     if i == j:
                         # Highlighted Word
                         # Increase size slightly for pop effect (1.2x)
+                        current_highlight_font = word_highlight_fonts[j]
                         line_parts.append(f'{{\\fn{current_highlight_font}}}{{\\fs{int(font_size * 1.2)}}}<font color="{highlight_color}">{word_text}</font>')
                     else:
                         # Base Word
+                        current_base_font = word_base_fonts[j]
                         line_parts.append(f'{{\\fn{current_base_font}}}{{\\fs{font_size}}}<font color="{base_color}">{word_text}</font>')
                 
                 text_line = " ".join(line_parts)
@@ -144,7 +161,8 @@ def generate_srt_content(
             end = format_timestamp(words[-1]['end'])
             
             line_parts = []
-            for w_text in processed_words_text:
+            for j, w_text in enumerate(processed_words_text):
+                current_base_font = word_base_fonts[j]
                 line_parts.append(f'{{\\fn{current_base_font}}}{{\\fs{font_size}}}<font color="{base_color}">{w_text}</font>')
             
             text_line = " ".join(line_parts)
