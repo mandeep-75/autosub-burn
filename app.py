@@ -64,9 +64,19 @@ with st.sidebar:
     alignment_option = st.selectbox("Alignment", ["Center", "Left", "Right"], index=0)
     x_padding = st.slider("Horizontal Padding (X)", 0, 500, 20, help="Distance from left/right edge")
     
-    st.markdown("**Randomization (Experimental)**")
-    random_base = st.checkbox("Randomize Base Font (Chaotic!)")
-    random_highlight = st.checkbox("Randomize Highlight Font (Fun!)")
+    st.divider()
+    st.subheader("🎲 Randomization (Experimental)")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("**Fonts**")
+        random_base_font = st.checkbox("Random Base Font")
+        random_highlight_font = st.checkbox("Random Highlight Font")
+        
+    with col2:
+        st.markdown("**Colors**")
+        random_base_color = st.checkbox("Random Base Color")
+        random_highlight_color = st.checkbox("Random Highlight Color")
 
 # 1. Upload Video
 # 1. Upload Video
@@ -132,7 +142,8 @@ if uploaded_file is not None:
             highlight_color=highlight_color, base_color=base_color,
             max_words_per_line=max_words, font_size=font_size,
             base_font=base_font, highlight_font=highlight_font,
-            random_base=random_base, random_highlight=random_highlight
+            random_base_font=random_base_font, random_highlight_font=random_highlight_font,
+            random_base_color=random_base_color, random_highlight_color=random_highlight_color
         )
 
         # Variant 2: Standard (Romanized)
@@ -141,7 +152,8 @@ if uploaded_file is not None:
             highlight_color=highlight_color, base_color=base_color,
             max_words_per_line=max_words, font_size=font_size,
             base_font=base_font, highlight_font=highlight_font,
-            random_base=random_base, random_highlight=random_highlight
+            random_base_font=random_base_font, random_highlight_font=random_highlight_font,
+            random_base_color=random_base_color, random_highlight_color=random_highlight_color
         )
         
         # Variant 3: Karaoke (Highlighted)
@@ -150,7 +162,8 @@ if uploaded_file is not None:
             highlight_color=highlight_color, base_color=base_color,
             max_words_per_line=max_words, font_size=font_size,
             base_font=base_font, highlight_font=highlight_font,
-            random_base=random_base, random_highlight=random_highlight
+            random_base_font=random_base_font, random_highlight_font=random_highlight_font,
+            random_base_color=random_base_color, random_highlight_color=random_highlight_color
         )
         
         # User Selection

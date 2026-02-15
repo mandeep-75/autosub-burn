@@ -80,8 +80,10 @@ def generate_srt_content(
     font_size=26,
     base_font="Arial",
     highlight_font="Arial Black",
-    random_base=False,
-    random_highlight=False
+    random_base_font=False,
+    random_highlight_font=False,
+    random_base_color=False,
+    random_highlight_color=False
 ):
     srt_content = ""
     count = 1
@@ -123,16 +125,45 @@ def generate_srt_content(
         
         for _ in words:
             # Base Font for this word
-            if random_base:
+            if random_base_font:
                 word_base_fonts.append(get_random_tech_font())
             else:
                 word_base_fonts.append(resolve_font(base_font))
                 
             # Highlight Font for this word
-            if random_highlight:
+            if random_highlight_font:
                 word_highlight_fonts.append(get_random_tech_font())
             else:
                 word_highlight_fonts.append(resolve_font(highlight_font))
+
+        # Pre-calculate colors for each word
+        word_base_colors = []
+        word_highlight_colors = []
+        
+        # Helper for random hex color
+        def get_random_color():
+            return "#{:06x}".format(random.randint(0, 0xFFFFFF)).upper()
+
+        # Helper: Convert #RRGGBB to ASS &HBBGGRR&
+        def hex_to_ass_tag(hex_c):
+            h = hex_c.lstrip('#')
+            if len(h) == 6:
+                return f"&H{h[4:6]}{h[2:4]}{h[0:2]}&"
+            return hex_c
+
+        for _ in words:
+            # Base Color
+            if random_base_color:
+                word_base_colors.append(hex_to_ass_tag(get_random_color()))
+            else:
+                word_base_colors.append(hex_to_ass_tag(base_color))
+            
+            # Highlight Color
+            if random_highlight_color:
+                word_highlight_colors.append(hex_to_ass_tag(get_random_color()))
+            else:
+                word_highlight_colors.append(hex_to_ass_tag(highlight_color))
+
 
         # Determine highlighting
         if use_karaoke:
@@ -146,11 +177,14 @@ def generate_srt_content(
                         # Highlighted Word
                         # Increase size slightly for pop effect (1.2x)
                         current_highlight_font = word_highlight_fonts[j]
-                        line_parts.append(f'{{\\fn{current_highlight_font}}}{{\\fs{int(font_size * 1.2)}}}<font color="{highlight_color}">{word_text}</font>')
+                        current_highlight_color = word_highlight_colors[j]
+                        # Use ASS \c tag instead of <font>
+                        line_parts.append(f'{{\\fn{current_highlight_font}}}{{\\fs{int(font_size * 1.2)}}}{{\\c{current_highlight_color}}}{word_text}')
                     else:
                         # Base Word
                         current_base_font = word_base_fonts[j]
-                        line_parts.append(f'{{\\fn{current_base_font}}}{{\\fs{font_size}}}<font color="{base_color}">{word_text}</font>')
+                        current_base_color = word_base_colors[j]
+                        line_parts.append(f'{{\\fn{current_base_font}}}{{\\fs{font_size}}}{{\\c{current_base_color}}}{word_text}')
                 
                 text_line = " ".join(line_parts)
                 srt_content += f"{count}\n{start} --> {end}\n{text_line}\n\n"
@@ -163,7 +197,8 @@ def generate_srt_content(
             line_parts = []
             for j, w_text in enumerate(processed_words_text):
                 current_base_font = word_base_fonts[j]
-                line_parts.append(f'{{\\fn{current_base_font}}}{{\\fs{font_size}}}<font color="{base_color}">{w_text}</font>')
+                current_base_color = word_base_colors[j]
+                line_parts.append(f'{{\\fn{current_base_font}}}{{\\fs{font_size}}}{{\\c{current_base_color}}}{w_text}')
             
             text_line = " ".join(line_parts)
             srt_content += f"{count}\n{start} --> {end}\n{text_line}\n\n"
