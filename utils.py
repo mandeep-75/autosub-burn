@@ -70,6 +70,146 @@ def split_long_segment(segment, max_words=10):
         
     return new_segments
 
+def parse_srt_to_segments(srt_path):
+    """Parse a standard SRT file into our internal segment list, filtering non-speech tags."""
+    import pysubs2
+    subs = pysubs2.load(srt_path, encoding="utf-8")
+    segments = []
+    for s in subs:
+        text = s.text.replace("\\N", " ").strip()
+        if not text: continue
+        
+        # Filter out [TAGS] like [BLANK_AUDIO]
+        words_raw = text.split()
+        words_filtered = [w for w in words_raw if not (w.startswith("[") and w.endswith("]"))]
+        
+        if not words_filtered:
+            continue
+            
+        filtered_text = " ".join(words_filtered)
+        start = s.start / 1000.0
+        end = s.end / 1000.0
+        
+        word_list = []
+        if words_filtered and end > start:
+            duration = end - start
+            per_word = duration / len(words_filtered)
+            for i, w in enumerate(words_filtered):
+                word_list.append({
+                    "word": w,
+                    "start": start + i * per_word,
+                    "end": start + (i + 1) * per_word
+                })
+                
+        segments.append({
+            "start": start,
+            "end": end,
+            "text": filtered_text,
+            "words": word_list
+        })
+    return segments
+
+def merge_segments(segments, max_words=8):
+    """
+    Groups many small segments (e.g. 1-word segments from whisper.cpp -ml 1)
+    into larger segments for display, while preserving word-level timing.
+    """
+    if not segments: return []
+    
+    merged = []
+    current_words = []
+    
+    for seg in segments:
+        seg_words = seg.get('words', [])
+        if not seg_words:
+            # Create a word if it's missing (fallback)
+            seg_words = [{
+                "word": seg.get('text', ''),
+                "start": seg['start'],
+                "end": seg['end']
+            }]
+        
+        current_words.extend(seg_words)
+        
+        if len(current_words) >= max_words:
+            merged.append({
+                "start": current_words[0]["start"],
+                "end": current_words[-1]["end"],
+                "text": " ".join([w["word"] for w in current_words]),
+                "words": current_words
+            })
+            current_words = []
+            
+    if current_words:
+        merged.append({
+            "start": current_words[0]["start"],
+            "end": current_words[-1]["end"],
+            "text": " ".join([w["word"] for w in current_words]),
+            "words": current_words
+        })
+        
+    return merged
+
+def parse_whisper_json(data):
+    """Convert whisper.cpp Full JSON (-ojf) into our internal segment list with word-level details."""
+    segments = []
+    
+    def to_secs(v):
+        if v is None: return 0.0
+        if isinstance(v, (int, float)):
+            return float(v) / 1000.0 # whisper.cpp JSON offsets are in ms
+        return 0.0
+
+    if "transcription" in data:
+        for seg in data["transcription"]:
+            text = seg.get("text", "").strip()
+            if not text: continue
+            
+            # Use tokens for word-level accuracy if available
+            word_list = []
+            tokens = seg.get("tokens", [])
+            for tok in tokens:
+                tok_text = tok.get("text", "").strip()
+                # Skip special tokens [...]
+                if not tok_text or (tok_text.startswith("[") and tok_text.endswith("]")):
+                    continue
+                
+                off = tok.get("offsets", {})
+                word_list.append({
+                    "word": tok_text,
+                    "start": to_secs(off.get("from")),
+                    "end": to_secs(off.get("to"))
+                })
+            
+            # Fallback to segment-level if no words found
+            if not word_list:
+                off = seg.get("offsets", {})
+                start_sec = to_secs(off.get("from"))
+                end_sec = to_secs(off.get("to"))
+                words_raw = text.split()
+                # Filter out [TAGS]
+                words_filtered = [w for w in words_raw if not (w.startswith("[") and w.endswith("]"))]
+                
+                if words_filtered and end_sec >= start_sec:
+                    duration = end_sec - start_sec
+                    per_word = duration / len(words_filtered)
+                    for i, w in enumerate(words_filtered):
+                        word_list.append({
+                            "word": w,
+                            "start": start_sec + i * per_word,
+                            "end": start_sec + (i + 1) * per_word
+                        })
+                    text = " ".join(words_filtered)
+            
+            if word_list:
+                segments.append({
+                    "start": word_list[0]["start"],
+                    "end": word_list[-1]["end"],
+                    "text": text,
+                    "words": word_list
+                })
+    return segments
+
 def generate_srt_content(
     segments, 
     use_roman=True, 

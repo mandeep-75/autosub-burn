@@ -1,7 +1,5 @@
-whisper
 streamlit
 indic-transliteration
-openai-whisper
-torch
 numpy
-ffmpeg-python
+pysubs2
+requests
