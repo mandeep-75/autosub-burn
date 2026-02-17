@@ -69,7 +69,21 @@ st.markdown("Automated captions with **Roman Hindi/Punjabi** transliteration and
 # Sidebar Configuration
 with st.sidebar:
     st.header("⚙️ Settings")
-    model_size = st.selectbox("Whisper Model", ["tiny", "base", "small", "medium", "large", "large-v3", "large-v3-turbo"], index=1)
+    model_options = {
+        "tiny": "tiny (multilingual)",
+        "base": "base (multilingual)", 
+        "small": "small (multilingual)",
+        "medium": "medium (multilingual)",
+        "large-v3": "large-v3",
+        "large-v3-turbo": "large-v3-turbo"
+    }
+    selected_label = st.selectbox(
+        "Whisper Model", 
+        options=list(model_options.values()), 
+        index=1 # base (multilingual)
+    )
+    # Map label back to model key
+    model_size = [k for k, v in model_options.items() if v == selected_label][0]
     st.divider()
     
     st.subheader("📏 Line & Font")
@@ -112,23 +126,30 @@ with st.sidebar:
 uploaded_file = st.file_uploader("Upload a Video (MOV, MP4)", type=["mov", "mp4", "mkv"])
 
 if uploaded_file is not None:
-    # Retrieve or create temp file
-    # We check if the filename matches what we have in state to avoid re-saving on every button click
+    # New file detected
     if 'last_uploaded_filename' not in st.session_state or st.session_state.get('last_uploaded_filename') != uploaded_file.name:
-        # New file detected
-        suffix = os.path.splitext(uploaded_file.name)[1]
-        if not suffix: suffix = ".mov"
+        video_name = os.path.splitext(uploaded_file.name)[0]
+        output_dir = os.path.join(BASE_DIR, "outputs", video_name)
+        os.makedirs(output_dir, exist_ok=True)
         
-        with NamedTemporaryFile(delete=False, suffix=suffix) as temp_video:
-            temp_video.write(uploaded_file.read())
-            st.session_state['temp_video_path'] = temp_video.name
-            st.session_state['last_uploaded_filename'] = uploaded_file.name
-            
-        # Reset transcription state for new file
+        # Save original video persistantly
+        video_path = os.path.join(output_dir, "original" + os.path.splitext(uploaded_file.name)[1])
+        with open(video_path, "wb") as f:
+            f.write(uploaded_file.read())
+        
+        st.session_state['video_path'] = video_path
+        st.session_state['output_dir'] = output_dir
+        st.session_state['video_name'] = video_name
+        st.session_state['last_uploaded_filename'] = uploaded_file.name
+        
+        # Reset results
         if 'transcription_result' in st.session_state:
             del st.session_state['transcription_result']
+        st.rerun()
 
-    video_path = st.session_state['temp_video_path']
+    video_path = st.session_state.get('video_path')
+    output_dir = st.session_state.get('output_dir')
+    video_name = st.session_state.get('video_name')
     st.video(video_path)
 
     # 2. Transcribe
@@ -146,11 +167,11 @@ if uploaded_file is not None:
                     st.stop()
 
                 # 3. Extract Audio (16kHz mono WAV is required by whisper.cpp)
-                temp_audio = video_path + ".wav"
+                temp_audio = os.path.join(output_dir, "audio.wav")
                 subprocess.run([FFMPEG_PATH, "-y", "-i", video_path, "-ac", "1", "-ar", "16000", temp_audio], check=True, capture_output=True)
 
                 # 4. Transcribe using whisper-cli
-                output_base = video_path + "_out"
+                output_base = os.path.join(output_dir, "whisper_out")
                 # Use char limit 1 to get word-level segments (Lip Sync)
                 char_limit = 1
                 
@@ -193,12 +214,7 @@ if uploaded_file is not None:
                 segments = merge_segments(segments, max_words=max_words)
                 
                 st.session_state['transcription_result'] = {'segments': segments}
-                st.success("Transcription Complete!")
-                
-                # Cleanup
-                if os.path.exists(temp_audio): os.remove(temp_audio)
-                if os.path.exists(srt_out_path): os.remove(srt_out_path)
-                if os.path.exists(json_out_path): os.remove(json_out_path)
+                st.success(f"Transcription Complete! Files saved in {output_dir}")
                 
             except Exception as e:
                 st.error(f"Transcription Failed: {e}")
@@ -268,17 +284,28 @@ if uploaded_file is not None:
         st.subheader("Step 3: Burn Subtitles to Video")
         
         if st.button("🔥 Create Final Video"):
-            base, ext = os.path.splitext(video_path)
-            output_video_path = f"{base}_subbed{ext}"
+            output_video_path = os.path.join(output_dir, "final_video.mov")
+            dialogue_srt_path = os.path.join(output_dir, "dialogue.srt")
+            karaoke_srt_path = os.path.join(output_dir, "lip_sync.srt")
             
-            with st.spinner("Burning subtitles using Hardware Acceleration..."):
+            with st.spinner("Burning subtitles & Saving to Folder..."):
                 try:
-                    # 1. Convert SRT to ASS using pysubs2 for better styling control
-                    subs = pysubs2.load(srt_path, encoding="utf-8")
+                    # Save variants for storage
+                    with open(dialogue_srt_path, "w", encoding="utf-8") as f:
+                        f.write(variants["Standard (Romanized)"])
+                    with open(karaoke_srt_path, "w", encoding="utf-8") as f:
+                        f.write(variants["Karaoke (Highlighted)"])
+                    
+                    # 1. Convert selected SRT to ASS using pysubs2 for better styling control
+                    # Use a temp file for the final burn srt/ass to avoid conflicts
+                    temp_srt_path = os.path.join(output_dir, "temp_burn.srt")
+                    with open(temp_srt_path, "w", encoding="utf-8") as f:
+                        f.write(srt_text)
+                        
+                    subs = pysubs2.load(temp_srt_path, encoding="utf-8")
                     
                     # 2. Define the style
                     def hex_to_ass(hex_color):
-                        # Streamlit returns #RRGGBB, ASS wants &H00BBGGRR (ABGR)
                         hex_color = hex_color.lstrip('#')
                         r, g, b = hex_color[0:2], hex_color[2:4], hex_color[4:6]
                         return f"&H00{b}{g}{r}"
@@ -293,24 +320,15 @@ if uploaded_file is not None:
                         primarycolor=ass_base_color,
                         outlinecolor="&H00000000",
                         backcolor="&H00000000",
-                        borderstyle=1,
-                        outline=2,
-                        shadow=0,
+                        borderstyle=1, outline=2, shadow=0,
                         alignment=align_map[alignment_option],
-                        marginv=y_padding,
-                        marginl=x_padding,
-                        marginr=x_padding
+                        marginv=y_padding, marginl=x_padding, marginr=x_padding
                     )
-                    
-                    # Apply style to all events? No, just set as Default
                     subs.styles["Default"] = style
-                    
-                    # Save as ASS
-                    ass_path = video_path + ".ass"
+                    ass_path = temp_srt_path + ".ass"
                     subs.save(ass_path)
 
                     # 3. Burn with FFmpeg
-                    # Escape the path for the 'ass' filter (standard ffmpeg filter escaping)
                     escaped_ass_path = ass_path.replace("\\", "/").replace(":", "\\:").replace("'", "\\'")
                     
                     cmd = [
@@ -322,10 +340,13 @@ if uploaded_file is not None:
                         output_video_path
                     ]
                     
-                    # Run and capture output
                     subprocess.run(cmd, check=True, capture_output=True)
                     
-                    st.success("Video Created Successfully!")
+                    # Final Cleanup of temp files
+                    if os.path.exists(temp_srt_path): os.remove(temp_srt_path)
+                    if os.path.exists(ass_path): os.remove(ass_path)
+                    
+                    st.success(f"Done! Files saved in: outputs/{video_name}/")
                     st.video(output_video_path)
                     
                     # 4. Download

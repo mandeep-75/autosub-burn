@@ -1,0 +1,176 @@
+1
+00:00:00,000 --> 00:00:00,170
+{\fnArial-Black}{\fs19}{\c&H00FFFF&}We {\fnArial}{\fs16}{\c&HFFFFFF&}treat {\fnArial}{\fs16}{\c&HFFFFFF&}time {\fnArial}{\fs16}{\c&HFFFFFF&}like {\fnArial}{\fs16}{\c&HFFFFFF&}a {\fnArial}{\fs16}{\c&HFFFFFF&}bottomless {\fnArial}{\fs16}{\c&HFFFFFF&}bank {\fnArial}{\fs16}{\c&HFFFFFF&}account,
+
+2
+00:00:00,170 --> 00:00:00,690
+{\fnArial}{\fs16}{\c&HFFFFFF&}We {\fnArial-Black}{\fs19}{\c&H00FFFF&}treat {\fnArial}{\fs16}{\c&HFFFFFF&}time {\fnArial}{\fs16}{\c&HFFFFFF&}like {\fnArial}{\fs16}{\c&HFFFFFF&}a {\fnArial}{\fs16}{\c&HFFFFFF&}bottomless {\fnArial}{\fs16}{\c&HFFFFFF&}bank {\fnArial}{\fs16}{\c&HFFFFFF&}account,
+
+3
+00:00:00,690 --> 00:00:00,960
+{\fnArial}{\fs16}{\c&HFFFFFF&}We {\fnArial}{\fs16}{\c&HFFFFFF&}treat {\fnArial-Black}{\fs19}{\c&H00FFFF&}time {\fnArial}{\fs16}{\c&HFFFFFF&}like {\fnArial}{\fs16}{\c&HFFFFFF&}a {\fnArial}{\fs16}{\c&HFFFFFF&}bottomless {\fnArial}{\fs16}{\c&HFFFFFF&}bank {\fnArial}{\fs16}{\c&HFFFFFF&}account,
+
+4
+00:00:00,960 --> 00:00:01,310
+{\fnArial}{\fs16}{\c&HFFFFFF&}We {\fnArial}{\fs16}{\c&HFFFFFF&}treat {\fnArial}{\fs16}{\c&HFFFFFF&}time {\fnArial-Black}{\fs19}{\c&H00FFFF&}like {\fnArial}{\fs16}{\c&HFFFFFF&}a {\fnArial}{\fs16}{\c&HFFFFFF&}bottomless {\fnArial}{\fs16}{\c&HFFFFFF&}bank {\fnArial}{\fs16}{\c&HFFFFFF&}account,
+
+5
+00:00:01,310 --> 00:00:01,390
+{\fnArial}{\fs16}{\c&HFFFFFF&}We {\fnArial}{\fs16}{\c&HFFFFFF&}treat {\fnArial}{\fs16}{\c&HFFFFFF&}time {\fnArial}{\fs16}{\c&HFFFFFF&}like {\fnArial-Black}{\fs19}{\c&H00FFFF&}a {\fnArial}{\fs16}{\c&HFFFFFF&}bottomless {\fnArial}{\fs16}{\c&HFFFFFF&}bank {\fnArial}{\fs16}{\c&HFFFFFF&}account,
+
+6
+00:00:01,390 --> 00:00:02,270
+{\fnArial}{\fs16}{\c&HFFFFFF&}We {\fnArial}{\fs16}{\c&HFFFFFF&}treat {\fnArial}{\fs16}{\c&HFFFFFF&}time {\fnArial}{\fs16}{\c&HFFFFFF&}like {\fnArial}{\fs16}{\c&HFFFFFF&}a {\fnArial-Black}{\fs19}{\c&H00FFFF&}bottomless {\fnArial}{\fs16}{\c&HFFFFFF&}bank {\fnArial}{\fs16}{\c&HFFFFFF&}account,
+
+7
+00:00:02,270 --> 00:00:02,610
+{\fnArial}{\fs16}{\c&HFFFFFF&}We {\fnArial}{\fs16}{\c&HFFFFFF&}treat {\fnArial}{\fs16}{\c&HFFFFFF&}time {\fnArial}{\fs16}{\c&HFFFFFF&}like {\fnArial}{\fs16}{\c&HFFFFFF&}a {\fnArial}{\fs16}{\c&HFFFFFF&}bottomless {\fnArial-Black}{\fs19}{\c&H00FFFF&}bank {\fnArial}{\fs16}{\c&HFFFFFF&}account,
+
+8
+00:00:02,610 --> 00:00:03,410
+{\fnArial}{\fs16}{\c&HFFFFFF&}We {\fnArial}{\fs16}{\c&HFFFFFF&}treat {\fnArial}{\fs16}{\c&HFFFFFF&}time {\fnArial}{\fs16}{\c&HFFFFFF&}like {\fnArial}{\fs16}{\c&HFFFFFF&}a {\fnArial}{\fs16}{\c&HFFFFFF&}bottomless {\fnArial}{\fs16}{\c&HFFFFFF&}bank {\fnArial-Black}{\fs19}{\c&H00FFFF&}account,
+
+9
+00:00:03,410 --> 00:00:03,740
+{\fnArial-Black}{\fs19}{\c&H00FFFF&}until {\fnArial}{\fs16}{\c&HFFFFFF&}the {\fnArial}{\fs16}{\c&HFFFFFF&}statement {\fnArial}{\fs16}{\c&HFFFFFF&}finally {\fnArial}{\fs16}{\c&HFFFFFF&}bounces. {\fnArial}{\fs16}{\c&HFFFFFF&}Brownivere, {\fnArial}{\fs16}{\c&HFFFFFF&}a {\fnArial}{\fs16}{\c&HFFFFFF&}nurse
+
+10
+00:00:03,740 --> 00:00:03,940
+{\fnArial}{\fs16}{\c&HFFFFFF&}until {\fnArial-Black}{\fs19}{\c&H00FFFF&}the {\fnArial}{\fs16}{\c&HFFFFFF&}statement {\fnArial}{\fs16}{\c&HFFFFFF&}finally {\fnArial}{\fs16}{\c&HFFFFFF&}bounces. {\fnArial}{\fs16}{\c&HFFFFFF&}Brownivere, {\fnArial}{\fs16}{\c&HFFFFFF&}a {\fnArial}{\fs16}{\c&HFFFFFF&}nurse
+
+11
+00:00:03,940 --> 00:00:04,590
+{\fnArial}{\fs16}{\c&HFFFFFF&}until {\fnArial}{\fs16}{\c&HFFFFFF&}the {\fnArial-Black}{\fs19}{\c&H00FFFF&}statement {\fnArial}{\fs16}{\c&HFFFFFF&}finally {\fnArial}{\fs16}{\c&HFFFFFF&}bounces. {\fnArial}{\fs16}{\c&HFFFFFF&}Brownivere, {\fnArial}{\fs16}{\c&HFFFFFF&}a {\fnArial}{\fs16}{\c&HFFFFFF&}nurse
+
+12
+00:00:04,590 --> 00:00:04,960
+{\fnArial}{\fs16}{\c&HFFFFFF&}until {\fnArial}{\fs16}{\c&HFFFFFF&}the {\fnArial}{\fs16}{\c&HFFFFFF&}statement {\fnArial-Black}{\fs19}{\c&H00FFFF&}finally {\fnArial}{\fs16}{\c&HFFFFFF&}bounces. {\fnArial}{\fs16}{\c&HFFFFFF&}Brownivere, {\fnArial}{\fs16}{\c&HFFFFFF&}a {\fnArial}{\fs16}{\c&HFFFFFF&}nurse
+
+13
+00:00:04,960 --> 00:00:05,880
+{\fnArial}{\fs16}{\c&HFFFFFF&}until {\fnArial}{\fs16}{\c&HFFFFFF&}the {\fnArial}{\fs16}{\c&HFFFFFF&}statement {\fnArial}{\fs16}{\c&HFFFFFF&}finally {\fnArial-Black}{\fs19}{\c&H00FFFF&}bounces. {\fnArial}{\fs16}{\c&HFFFFFF&}Brownivere, {\fnArial}{\fs16}{\c&HFFFFFF&}a {\fnArial}{\fs16}{\c&HFFFFFF&}nurse
+
+14
+00:00:05,880 --> 00:00:06,680
+{\fnArial}{\fs16}{\c&HFFFFFF&}until {\fnArial}{\fs16}{\c&HFFFFFF&}the {\fnArial}{\fs16}{\c&HFFFFFF&}statement {\fnArial}{\fs16}{\c&HFFFFFF&}finally {\fnArial}{\fs16}{\c&HFFFFFF&}bounces. {\fnArial-Black}{\fs19}{\c&H00FFFF&}Brownivere, {\fnArial}{\fs16}{\c&HFFFFFF&}a {\fnArial}{\fs16}{\c&HFFFFFF&}nurse
+
+15
+00:00:06,680 --> 00:00:06,780
+{\fnArial}{\fs16}{\c&HFFFFFF&}until {\fnArial}{\fs16}{\c&HFFFFFF&}the {\fnArial}{\fs16}{\c&HFFFFFF&}statement {\fnArial}{\fs16}{\c&HFFFFFF&}finally {\fnArial}{\fs16}{\c&HFFFFFF&}bounces. {\fnArial}{\fs16}{\c&HFFFFFF&}Brownivere, {\fnArial-Black}{\fs19}{\c&H00FFFF&}a {\fnArial}{\fs16}{\c&HFFFFFF&}nurse
+
+16
+00:00:06,780 --> 00:00:07,090
+{\fnArial}{\fs16}{\c&HFFFFFF&}until {\fnArial}{\fs16}{\c&HFFFFFF&}the {\fnArial}{\fs16}{\c&HFFFFFF&}statement {\fnArial}{\fs16}{\c&HFFFFFF&}finally {\fnArial}{\fs16}{\c&HFFFFFF&}bounces. {\fnArial}{\fs16}{\c&HFFFFFF&}Brownivere, {\fnArial}{\fs16}{\c&HFFFFFF&}a {\fnArial-Black}{\fs19}{\c&H00FFFF&}nurse
+
+17
+00:00:07,090 --> 00:00:07,300
+{\fnArial-Black}{\fs19}{\c&H00FFFF&}who {\fnArial}{\fs16}{\c&HFFFFFF&}spent {\fnArial}{\fs16}{\c&HFFFFFF&}years {\fnArial}{\fs16}{\c&HFFFFFF&}sitting {\fnArial}{\fs16}{\c&HFFFFFF&}with {\fnArial}{\fs16}{\c&HFFFFFF&}the {\fnArial}{\fs16}{\c&HFFFFFF&}people {\fnArial}{\fs16}{\c&HFFFFFF&}in
+
+18
+00:00:07,300 --> 00:00:07,670
+{\fnArial}{\fs16}{\c&HFFFFFF&}who {\fnArial-Black}{\fs19}{\c&H00FFFF&}spent {\fnArial}{\fs16}{\c&HFFFFFF&}years {\fnArial}{\fs16}{\c&HFFFFFF&}sitting {\fnArial}{\fs16}{\c&HFFFFFF&}with {\fnArial}{\fs16}{\c&HFFFFFF&}the {\fnArial}{\fs16}{\c&HFFFFFF&}people {\fnArial}{\fs16}{\c&HFFFFFF&}in
+
+19
+00:00:07,670 --> 00:00:07,980
+{\fnArial}{\fs16}{\c&HFFFFFF&}who {\fnArial}{\fs16}{\c&HFFFFFF&}spent {\fnArial-Black}{\fs19}{\c&H00FFFF&}years {\fnArial}{\fs16}{\c&HFFFFFF&}sitting {\fnArial}{\fs16}{\c&HFFFFFF&}with {\fnArial}{\fs16}{\c&HFFFFFF&}the {\fnArial}{\fs16}{\c&HFFFFFF&}people {\fnArial}{\fs16}{\c&HFFFFFF&}in
+
+20
+00:00:07,980 --> 00:00:08,460
+{\fnArial}{\fs16}{\c&HFFFFFF&}who {\fnArial}{\fs16}{\c&HFFFFFF&}spent {\fnArial}{\fs16}{\c&HFFFFFF&}years {\fnArial-Black}{\fs19}{\c&H00FFFF&}sitting {\fnArial}{\fs16}{\c&HFFFFFF&}with {\fnArial}{\fs16}{\c&HFFFFFF&}the {\fnArial}{\fs16}{\c&HFFFFFF&}people {\fnArial}{\fs16}{\c&HFFFFFF&}in
+
+21
+00:00:08,460 --> 00:00:08,730
+{\fnArial}{\fs16}{\c&HFFFFFF&}who {\fnArial}{\fs16}{\c&HFFFFFF&}spent {\fnArial}{\fs16}{\c&HFFFFFF&}years {\fnArial}{\fs16}{\c&HFFFFFF&}sitting {\fnArial-Black}{\fs19}{\c&H00FFFF&}with {\fnArial}{\fs16}{\c&HFFFFFF&}the {\fnArial}{\fs16}{\c&HFFFFFF&}people {\fnArial}{\fs16}{\c&HFFFFFF&}in
+
+22
+00:00:08,730 --> 00:00:08,950
+{\fnArial}{\fs16}{\c&HFFFFFF&}who {\fnArial}{\fs16}{\c&HFFFFFF&}spent {\fnArial}{\fs16}{\c&HFFFFFF&}years {\fnArial}{\fs16}{\c&HFFFFFF&}sitting {\fnArial}{\fs16}{\c&HFFFFFF&}with {\fnArial-Black}{\fs19}{\c&H00FFFF&}the {\fnArial}{\fs16}{\c&HFFFFFF&}people {\fnArial}{\fs16}{\c&HFFFFFF&}in
+
+23
+00:00:08,950 --> 00:00:09,360
+{\fnArial}{\fs16}{\c&HFFFFFF&}who {\fnArial}{\fs16}{\c&HFFFFFF&}spent {\fnArial}{\fs16}{\c&HFFFFFF&}years {\fnArial}{\fs16}{\c&HFFFFFF&}sitting {\fnArial}{\fs16}{\c&HFFFFFF&}with {\fnArial}{\fs16}{\c&HFFFFFF&}the {\fnArial-Black}{\fs19}{\c&H00FFFF&}people {\fnArial}{\fs16}{\c&HFFFFFF&}in
+
+24
+00:00:09,360 --> 00:00:09,500
+{\fnArial}{\fs16}{\c&HFFFFFF&}who {\fnArial}{\fs16}{\c&HFFFFFF&}spent {\fnArial}{\fs16}{\c&HFFFFFF&}years {\fnArial}{\fs16}{\c&HFFFFFF&}sitting {\fnArial}{\fs16}{\c&HFFFFFF&}with {\fnArial}{\fs16}{\c&HFFFFFF&}the {\fnArial}{\fs16}{\c&HFFFFFF&}people {\fnArial-Black}{\fs19}{\c&H00FFFF&}in
+
+25
+00:00:09,500 --> 00:00:09,840
+{\fnArial-Black}{\fs19}{\c&H00FFFF&}their {\fnArial}{\fs16}{\c&HFFFFFF&}final {\fnArial}{\fs16}{\c&HFFFFFF&}peaks, {\fnArial}{\fs16}{\c&HFFFFFF&}found {\fnArial}{\fs16}{\c&HFFFFFF&}that {\fnArial}{\fs16}{\c&HFFFFFF&}nobody, {\fnArial}{\fs16}{\c&HFFFFFF&}not {\fnArial}{\fs16}{\c&HFFFFFF&}even
+
+26
+00:00:09,840 --> 00:00:10,180
+{\fnArial}{\fs16}{\c&HFFFFFF&}their {\fnArial-Black}{\fs19}{\c&H00FFFF&}final {\fnArial}{\fs16}{\c&HFFFFFF&}peaks, {\fnArial}{\fs16}{\c&HFFFFFF&}found {\fnArial}{\fs16}{\c&HFFFFFF&}that {\fnArial}{\fs16}{\c&HFFFFFF&}nobody, {\fnArial}{\fs16}{\c&HFFFFFF&}not {\fnArial}{\fs16}{\c&HFFFFFF&}even
+
+27
+00:00:10,180 --> 00:00:10,680
+{\fnArial}{\fs16}{\c&HFFFFFF&}their {\fnArial}{\fs16}{\c&HFFFFFF&}final {\fnArial-Black}{\fs19}{\c&H00FFFF&}peaks, {\fnArial}{\fs16}{\c&HFFFFFF&}found {\fnArial}{\fs16}{\c&HFFFFFF&}that {\fnArial}{\fs16}{\c&HFFFFFF&}nobody, {\fnArial}{\fs16}{\c&HFFFFFF&}not {\fnArial}{\fs16}{\c&HFFFFFF&}even
+
+28
+00:00:10,680 --> 00:00:10,980
+{\fnArial}{\fs16}{\c&HFFFFFF&}their {\fnArial}{\fs16}{\c&HFFFFFF&}final {\fnArial}{\fs16}{\c&HFFFFFF&}peaks, {\fnArial-Black}{\fs19}{\c&H00FFFF&}found {\fnArial}{\fs16}{\c&HFFFFFF&}that {\fnArial}{\fs16}{\c&HFFFFFF&}nobody, {\fnArial}{\fs16}{\c&HFFFFFF&}not {\fnArial}{\fs16}{\c&HFFFFFF&}even
+
+29
+00:00:10,980 --> 00:00:11,250
+{\fnArial}{\fs16}{\c&HFFFFFF&}their {\fnArial}{\fs16}{\c&HFFFFFF&}final {\fnArial}{\fs16}{\c&HFFFFFF&}peaks, {\fnArial}{\fs16}{\c&HFFFFFF&}found {\fnArial-Black}{\fs19}{\c&H00FFFF&}that {\fnArial}{\fs16}{\c&HFFFFFF&}nobody, {\fnArial}{\fs16}{\c&HFFFFFF&}not {\fnArial}{\fs16}{\c&HFFFFFF&}even
+
+30
+00:00:11,250 --> 00:00:11,790
+{\fnArial}{\fs16}{\c&HFFFFFF&}their {\fnArial}{\fs16}{\c&HFFFFFF&}final {\fnArial}{\fs16}{\c&HFFFFFF&}peaks, {\fnArial}{\fs16}{\c&HFFFFFF&}found {\fnArial}{\fs16}{\c&HFFFFFF&}that {\fnArial-Black}{\fs19}{\c&H00FFFF&}nobody, {\fnArial}{\fs16}{\c&HFFFFFF&}not {\fnArial}{\fs16}{\c&HFFFFFF&}even
+
+31
+00:00:11,790 --> 00:00:11,990
+{\fnArial}{\fs16}{\c&HFFFFFF&}their {\fnArial}{\fs16}{\c&HFFFFFF&}final {\fnArial}{\fs16}{\c&HFFFFFF&}peaks, {\fnArial}{\fs16}{\c&HFFFFFF&}found {\fnArial}{\fs16}{\c&HFFFFFF&}that {\fnArial}{\fs16}{\c&HFFFFFF&}nobody, {\fnArial-Black}{\fs19}{\c&H00FFFF&}not {\fnArial}{\fs16}{\c&HFFFFFF&}even
+
+32
+00:00:11,990 --> 00:00:12,260
+{\fnArial}{\fs16}{\c&HFFFFFF&}their {\fnArial}{\fs16}{\c&HFFFFFF&}final {\fnArial}{\fs16}{\c&HFFFFFF&}peaks, {\fnArial}{\fs16}{\c&HFFFFFF&}found {\fnArial}{\fs16}{\c&HFFFFFF&}that {\fnArial}{\fs16}{\c&HFFFFFF&}nobody, {\fnArial}{\fs16}{\c&HFFFFFF&}not {\fnArial-Black}{\fs19}{\c&H00FFFF&}even
+
+33
+00:00:12,260 --> 00:00:12,330
+{\fnArial-Black}{\fs19}{\c&H00FFFF&}a {\fnArial}{\fs16}{\c&HFFFFFF&}single {\fnArial}{\fs16}{\c&HFFFFFF&}person, {\fnArial}{\fs16}{\c&HFFFFFF&}wished {\fnArial}{\fs16}{\c&HFFFFFF&}they {\fnArial}{\fs16}{\c&HFFFFFF&}would {\fnArial}{\fs16}{\c&HFFFFFF&}have {\fnArial}{\fs16}{\c&HFFFFFF&}spent
+
+34
+00:00:12,330 --> 00:00:12,770
+{\fnArial}{\fs16}{\c&HFFFFFF&}a {\fnArial-Black}{\fs19}{\c&H00FFFF&}single {\fnArial}{\fs16}{\c&HFFFFFF&}person, {\fnArial}{\fs16}{\c&HFFFFFF&}wished {\fnArial}{\fs16}{\c&HFFFFFF&}they {\fnArial}{\fs16}{\c&HFFFFFF&}would {\fnArial}{\fs16}{\c&HFFFFFF&}have {\fnArial}{\fs16}{\c&HFFFFFF&}spent
+
+35
+00:00:12,770 --> 00:00:13,280
+{\fnArial}{\fs16}{\c&HFFFFFF&}a {\fnArial}{\fs16}{\c&HFFFFFF&}single {\fnArial-Black}{\fs19}{\c&H00FFFF&}person, {\fnArial}{\fs16}{\c&HFFFFFF&}wished {\fnArial}{\fs16}{\c&HFFFFFF&}they {\fnArial}{\fs16}{\c&HFFFFFF&}would {\fnArial}{\fs16}{\c&HFFFFFF&}have {\fnArial}{\fs16}{\c&HFFFFFF&}spent
+
+36
+00:00:13,280 --> 00:00:13,690
+{\fnArial}{\fs16}{\c&HFFFFFF&}a {\fnArial}{\fs16}{\c&HFFFFFF&}single {\fnArial}{\fs16}{\c&HFFFFFF&}person, {\fnArial-Black}{\fs19}{\c&H00FFFF&}wished {\fnArial}{\fs16}{\c&HFFFFFF&}they {\fnArial}{\fs16}{\c&HFFFFFF&}would {\fnArial}{\fs16}{\c&HFFFFFF&}have {\fnArial}{\fs16}{\c&HFFFFFF&}spent
+
+37
+00:00:13,690 --> 00:00:13,960
+{\fnArial}{\fs16}{\c&HFFFFFF&}a {\fnArial}{\fs16}{\c&HFFFFFF&}single {\fnArial}{\fs16}{\c&HFFFFFF&}person, {\fnArial}{\fs16}{\c&HFFFFFF&}wished {\fnArial-Black}{\fs19}{\c&H00FFFF&}they {\fnArial}{\fs16}{\c&HFFFFFF&}would {\fnArial}{\fs16}{\c&HFFFFFF&}have {\fnArial}{\fs16}{\c&HFFFFFF&}spent
+
+38
+00:00:13,960 --> 00:00:14,300
+{\fnArial}{\fs16}{\c&HFFFFFF&}a {\fnArial}{\fs16}{\c&HFFFFFF&}single {\fnArial}{\fs16}{\c&HFFFFFF&}person, {\fnArial}{\fs16}{\c&HFFFFFF&}wished {\fnArial}{\fs16}{\c&HFFFFFF&}they {\fnArial-Black}{\fs19}{\c&H00FFFF&}would {\fnArial}{\fs16}{\c&HFFFFFF&}have {\fnArial}{\fs16}{\c&HFFFFFF&}spent
+
+39
+00:00:14,300 --> 00:00:14,570
+{\fnArial}{\fs16}{\c&HFFFFFF&}a {\fnArial}{\fs16}{\c&HFFFFFF&}single {\fnArial}{\fs16}{\c&HFFFFFF&}person, {\fnArial}{\fs16}{\c&HFFFFFF&}wished {\fnArial}{\fs16}{\c&HFFFFFF&}they {\fnArial}{\fs16}{\c&HFFFFFF&}would {\fnArial-Black}{\fs19}{\c&H00FFFF&}have {\fnArial}{\fs16}{\c&HFFFFFF&}spent
+
+40
+00:00:14,570 --> 00:00:14,910
+{\fnArial}{\fs16}{\c&HFFFFFF&}a {\fnArial}{\fs16}{\c&HFFFFFF&}single {\fnArial}{\fs16}{\c&HFFFFFF&}person, {\fnArial}{\fs16}{\c&HFFFFFF&}wished {\fnArial}{\fs16}{\c&HFFFFFF&}they {\fnArial}{\fs16}{\c&HFFFFFF&}would {\fnArial}{\fs16}{\c&HFFFFFF&}have {\fnArial-Black}{\fs19}{\c&H00FFFF&}spent
+
+41
+00:00:14,910 --> 00:00:15,180
+{\fnArial-Black}{\fs19}{\c&H00FFFF&}more {\fnArial}{\fs16}{\c&HFFFFFF&}time {\fnArial}{\fs16}{\c&HFFFFFF&}in {\fnArial}{\fs16}{\c&HFFFFFF&}office
+
+42
+00:00:15,180 --> 00:00:15,450
+{\fnArial}{\fs16}{\c&HFFFFFF&}more {\fnArial-Black}{\fs19}{\c&H00FFFF&}time {\fnArial}{\fs16}{\c&HFFFFFF&}in {\fnArial}{\fs16}{\c&HFFFFFF&}office
+
+43
+00:00:15,450 --> 00:00:15,580
+{\fnArial}{\fs16}{\c&HFFFFFF&}more {\fnArial}{\fs16}{\c&HFFFFFF&}time {\fnArial-Black}{\fs19}{\c&H00FFFF&}in {\fnArial}{\fs16}{\c&HFFFFFF&}office
+
+44
+00:00:15,580 --> 00:00:16,120
+{\fnArial}{\fs16}{\c&HFFFFFF&}more {\fnArial}{\fs16}{\c&HFFFFFF&}time {\fnArial}{\fs16}{\c&HFFFFFF&}in {\fnArial-Black}{\fs19}{\c&H00FFFF&}office
+
