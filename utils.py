@@ -109,7 +109,10 @@ def generate_srt_content(
     base_italic=False,
     highlight_bold=False,
     highlight_italic=False,
-    include_styling=True
+    include_styling=True,
+    # New parameters for additional variants
+    show_original_and_roman=False,   # if True, output two lines: original + romanized
+    text_transform=None               # 'upper', 'lower', or None
 ):
     srt_content = ""
     count = 1
@@ -122,15 +125,33 @@ def generate_srt_content(
         words = seg.get('words', [])
         if not words: continue
 
-        # Romanization if needed
-        processed_words_text = []
-        for w in words:
-            text = w['word']
-            if use_roman:
-                text = to_romanized(text)
-            processed_words_text.append(text)
+        # --- Prepare word texts ---
+        original_words_text = [w['word'] for w in words]          # never romanized
+        romanized_words_text = [to_romanized(w['word']) for w in words]
 
-        # Pre-calculate fonts and colors (only if styling enabled)
+        # Decide which text to use for display
+        if show_original_and_roman:
+            # We will build two lines later; for now keep both
+            display_words_text = original_words_text   # placeholder, not used directly
+        else:
+            # Normal mode: use romanized if requested
+            if use_roman:
+                display_words_text = romanized_words_text
+            else:
+                display_words_text = original_words_text
+
+        # Apply text transform if requested
+        if text_transform == 'upper':
+            transform_func = str.upper
+        elif text_transform == 'lower':
+            transform_func = str.lower
+        else:
+            transform_func = lambda x: x
+
+        if not show_original_and_roman:
+            display_words_text = [transform_func(w) for w in display_words_text]
+
+        # Pre-calculate fonts and colors if styling is enabled
         if include_styling:
             def get_random_tech_font():
                 return random.choice(list(AVAILABLE_FONTS.values()))
@@ -169,23 +190,49 @@ def generate_srt_content(
                 else:
                     word_highlight_colors.append(hex_to_ass_tag(highlight_color))
 
-        # Build lines
-        if use_karaoke and include_styling:
+        # --- Generate subtitle entries ---
+        if show_original_and_roman:
+            # Create one subtitle with two lines: original (top) and romanized (bottom)
+            start = format_timestamp(words[0]['start'])
+            end = format_timestamp(words[-1]['end'])
+
+            # Build original line (not romanized, but may be transformed)
+            orig_line = " ".join([transform_func(w) for w in original_words_text])
+            # Build romanized line (romanized and transformed)
+            roman_line = " ".join([transform_func(w) for w in romanized_words_text])
+            full_text = orig_line + "\\N" + roman_line
+
+            if include_styling:
+                # Apply base style to the whole subtitle (both lines)
+                tags = []
+                tags.append(f"\\fn{resolve_font(base_font)}")
+                tags.append(f"\\fs{font_size}")
+                tags.append(f"\\c{hex_to_ass_tag(base_color)}")
+                tags.append("\\b1" if base_bold else "\\b0")
+                tags.append("\\i1" if base_italic else "\\i0")
+                tag_str = "".join(tags)
+                line = f"{{{tag_str}}}{full_text}"
+            else:
+                line = full_text
+
+            srt_content += f"{count}\n{start} --> {end}\n{line}\n\n"
+            count += 1
+
+        elif use_karaoke and include_styling:
+            # Original karaoke mode (word by word)
             for i, current_word in enumerate(words):
                 start = format_timestamp(current_word['start'])
                 end = format_timestamp(current_word['end'])
 
                 line_parts = []
-                for j, word_text in enumerate(processed_words_text):
+                for j, word_text in enumerate(display_words_text):
                     if i == j:
-                        # Highlighted word
                         font = word_highlight_fonts[j]
                         col = word_highlight_colors[j]
                         size = int(font_size * 1.2)
                         bold = highlight_bold
                         italic = highlight_italic
                     else:
-                        # Base word
                         font = word_base_fonts[j]
                         col = word_base_colors[j]
                         size = font_size
@@ -198,7 +245,6 @@ def generate_srt_content(
                     tags.append(f"\\c{col}")
                     tags.append("\\b1" if bold else "\\b0")
                     tags.append("\\i1" if italic else "\\i0")
-
                     tag_str = "".join(tags)
                     line_parts.append(f"{{{tag_str}}}{word_text}")
 
@@ -210,17 +256,17 @@ def generate_srt_content(
             # Plain text, no tags
             start = format_timestamp(words[0]['start'])
             end = format_timestamp(words[-1]['end'])
-            text_line = " ".join(processed_words_text)
+            text_line = " ".join(display_words_text)
             srt_content += f"{count}\n{start} --> {end}\n{text_line}\n\n"
             count += 1
 
         else:
-            # Standard mode with styling
+            # Standard mode with styling (single subtitle per segment)
             start = format_timestamp(words[0]['start'])
             end = format_timestamp(words[-1]['end'])
 
             line_parts = []
-            for j, w_text in enumerate(processed_words_text):
+            for j, w_text in enumerate(display_words_text):
                 font = word_base_fonts[j]
                 col = word_base_colors[j]
                 size = font_size
@@ -233,7 +279,6 @@ def generate_srt_content(
                 tags.append(f"\\c{col}")
                 tags.append("\\b1" if bold else "\\b0")
                 tags.append("\\i1" if italic else "\\i0")
-
                 tag_str = "".join(tags)
                 line_parts.append(f"{{{tag_str}}}{w_text}")
 

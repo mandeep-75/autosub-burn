@@ -8,12 +8,23 @@ import torch
 import faster_whisper
 import platform
 import gc
+import glob
 from tempfile import NamedTemporaryFile
 from utils import AVAILABLE_FONTS, generate_srt_content, merge_segments
+
+# Import fontTools (with fallback)
+try:
+    from fontTools.ttLib import TTFont
+    FONTTOOLS_AVAILABLE = True
+except ImportError:
+    FONTTOOLS_AVAILABLE = False
+    st.warning("fontTools not installed. Custom font names will be based on filenames.")
 
 # --- CONFIG ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TOOLS_DIR = os.path.join(BASE_DIR, "tools")
+CUSTOM_FONTS_DIR = os.path.join(BASE_DIR, "custom_fonts")
+os.makedirs(CUSTOM_FONTS_DIR, exist_ok=True)
 
 SYSTEM_FFMPEG = shutil.which("ffmpeg")
 LOCAL_FFMPEG = os.path.join(TOOLS_DIR, "ffmpeg")
@@ -25,6 +36,38 @@ elif SYSTEM_FFMPEG:
 else:
     FFMPEG_PATH = "ffmpeg"
 
+def get_font_family(font_path):
+    """Return the font family name using fontTools, or filename if extraction fails."""
+    if FONTTOOLS_AVAILABLE:
+        try:
+            with TTFont(font_path) as font:
+                for record in font['name'].names:
+                    if record.nameID == 1 and record.platformID == 3 and record.langID == 0x409:
+                        return record.toStr()
+                for record in font['name'].names:
+                    if record.nameID == 16 and record.platformID == 3 and record.langID == 0x409:
+                        return record.toStr()
+                for record in font['name'].names:
+                    if record.nameID in (1, 16) and record.platformID == 1:
+                        return record.toStr()
+        except Exception:
+            pass
+    return os.path.splitext(os.path.basename(font_path))[0]
+
+def load_custom_fonts():
+    custom_fonts = {}
+    font_files = glob.glob(os.path.join(CUSTOM_FONTS_DIR, "*.ttf")) + \
+                 glob.glob(os.path.join(CUSTOM_FONTS_DIR, "*.otf")) + \
+                 glob.glob(os.path.join(CUSTOM_FONTS_DIR, "*.ttc"))
+    for font_file in font_files:
+        family = get_font_family(font_file)
+        if family and family not in custom_fonts:
+            custom_fonts[family] = family
+    for display_name, family_name in custom_fonts.items():
+        AVAILABLE_FONTS[display_name] = family_name
+    return custom_fonts
+
+load_custom_fonts()
 
 def get_best_ffmpeg_encoder():
     system = platform.system()
@@ -34,18 +77,34 @@ def get_best_ffmpeg_encoder():
         return "h264_nvenc"
     return "libx264"
 
-
 # --- MAIN APP ---
 st.set_page_config(page_title="Subtitle Refiner Bot", page_icon="🎬")
 
 st.title("🎬 AI Subtitle Generator & Refiner")
 st.markdown("""Automated captions with **Roman Hindi/Punjabi** transliteration and **Karaoke Highlights**.
-if using on streamlit cloud please auto and tiny model only
+If using on Streamlit Cloud, please use 'auto' device and 'tiny' model only.
 """)
 
 # Sidebar Configuration
 with st.sidebar:
     st.header("⚙️ Settings")
+
+    with st.expander("📁 Upload Custom Fonts", expanded=False):
+        st.markdown("Upload `.ttf`, `.otf`, or `.ttc` files. They will be saved to `custom_fonts/` and appear in the font lists below.")
+        uploaded_fonts = st.file_uploader(
+            "Choose font files",
+            type=["ttf", "otf", "ttc"],
+            accept_multiple_files=True,
+            key="font_uploader"
+        )
+        if uploaded_fonts:
+            for uploaded_file in uploaded_fonts:
+                save_path = os.path.join(CUSTOM_FONTS_DIR, uploaded_file.name)
+                with open(save_path, "wb") as f:
+                    f.write(uploaded_file.getbuffer())
+            load_custom_fonts()
+            st.success(f"Uploaded {len(uploaded_fonts)} font(s). They are now available in the font dropdowns.")
+
     model_options = {
         "tiny": "tiny (multilingual)",
         "base": "base (multilingual)",
@@ -102,7 +161,7 @@ with st.sidebar:
     st.subheader("🔤 Fonts")
     font_keys = list(AVAILABLE_FONTS.keys())
     base_font = st.selectbox("Base Font", font_keys, index=0)
-    highlight_font = st.selectbox("Highlight Font", font_keys, index=1)
+    highlight_font = st.selectbox("Highlight Font", font_keys, index=min(1, len(font_keys)-1))
 
     st.divider()
     st.subheader("🖋️ Text Style")
@@ -136,7 +195,7 @@ with st.sidebar:
 
     st.divider()
     if st.button("🧹 Clear Memory & Reset"):
-        keys_to_clear = ['transcription_result', 'video_path', 'output_dir', 'video_name', 'last_uploaded_filename']
+        keys_to_clear = ['transcription_result', 'video_path', 'output_dir', 'video_name', 'last_uploaded_filename', 'edited_srt']
         for k in keys_to_clear:
             if k in st.session_state:
                 del st.session_state[k]
@@ -144,7 +203,6 @@ with st.sidebar:
             torch.cuda.empty_cache()
         gc.collect()
         st.rerun()
-
 
 # 1. Upload Video
 uploaded_file = st.file_uploader("Upload a Video (MOV, MP4)", type=["mov", "mp4", "mkv"])
@@ -166,6 +224,8 @@ if uploaded_file is not None:
 
         if 'transcription_result' in st.session_state:
             del st.session_state['transcription_result']
+        if 'edited_srt' in st.session_state:
+            del st.session_state['edited_srt']
         st.rerun()
 
     video_path = st.session_state.get('video_path')
@@ -250,7 +310,6 @@ if uploaded_file is not None:
 
                 merged_segments = merge_segments(word_level_segments, max_words=max_words)
 
-                # Store both raw and merged segments
                 st.session_state['transcription_result'] = {
                     'raw_segments': word_level_segments,
                     'segments': merged_segments,
@@ -259,7 +318,6 @@ if uploaded_file is not None:
 
                 st.success(f"Transcription Complete! Language: {info.language.upper()}")
 
-                # Clean up model from memory
                 del model
                 if torch.cuda.is_available():
                     torch.cuda.empty_cache()
@@ -280,9 +338,18 @@ if uploaded_file is not None:
         segments = st.session_state['transcription_result']['segments']
         raw_segments = st.session_state['transcription_result']['raw_segments']
 
+        # Generate all variants (they are stored in a dictionary for later use)
         variants = {}
 
-        # Variant 1: Original (no roman, no karaoke) – styled
+        # --- Simple (Editable) - placed first ---
+        simple_original = generate_srt_content(
+            segments, use_roman=True, use_karaoke=False,
+            max_words_per_line=max_words,
+            include_styling=False
+        )
+        variants["Simple (Editable)"] = simple_original
+
+        # --- Other variants (unchanged) ---
         variants["Original (Auto-Detected)"] = generate_srt_content(
             segments, use_roman=False, use_karaoke=False,
             highlight_color=highlight_color, base_color=base_color,
@@ -294,7 +361,6 @@ if uploaded_file is not None:
             highlight_bold=highlight_bold, highlight_italic=highlight_italic
         )
 
-        # Variant 2: Standard (Romanized) – styled
         variants["Standard (Romanized)"] = generate_srt_content(
             segments, use_roman=True, use_karaoke=False,
             highlight_color=highlight_color, base_color=base_color,
@@ -306,7 +372,6 @@ if uploaded_file is not None:
             highlight_bold=highlight_bold, highlight_italic=highlight_italic
         )
 
-        # Variant 3: Karaoke (Highlighted) – styled
         variants["Karaoke (Highlighted)"] = generate_srt_content(
             segments, use_roman=True, use_karaoke=True,
             highlight_color=highlight_color, base_color=base_color,
@@ -318,21 +383,12 @@ if uploaded_file is not None:
             highlight_bold=highlight_bold, highlight_italic=highlight_italic
         )
 
-        # Variant 4: Simple (No Styling) – romanized, plain
-        variants["Simple (No Styling)"] = generate_srt_content(
-            segments, use_roman=True, use_karaoke=False,
-            max_words_per_line=max_words,
-            include_styling=False
-        )
-
-        # Variant 5: Lip Sync (Word‑level) – plain
-        variants["Lip Sync (Word‑level)"] = generate_srt_content(
+        variants["Lip Sync (Word‑level) - Plain"] = generate_srt_content(
             raw_segments, use_roman=True, use_karaoke=False,
             max_words_per_line=1,
             include_styling=False
         )
 
-        # Variant 6: Lip Sync (Word‑level) Styled – styled
         variants["Lip Sync (Word‑level) Styled"] = generate_srt_content(
             raw_segments, use_roman=True, use_karaoke=False,
             max_words_per_line=1,
@@ -346,17 +402,91 @@ if uploaded_file is not None:
             include_styling=True
         )
 
+        variants["Bilingual (Original + Romanized)"] = generate_srt_content(
+            segments, use_roman=True,
+            show_original_and_roman=True,
+            highlight_color=highlight_color, base_color=base_color,
+            max_words_per_line=max_words, font_size=font_size,
+            base_font=base_font, highlight_font=highlight_font,
+            random_base_font=random_base_font, random_highlight_font=random_highlight_font,
+            random_base_color=random_base_color, random_highlight_color=random_highlight_color,
+            base_bold=base_bold, base_italic=base_italic,
+            highlight_bold=highlight_bold, highlight_italic=highlight_italic,
+            include_styling=True
+        )
+
+        variants["Uppercase (Impact Style)"] = generate_srt_content(
+            segments, use_roman=True,
+            text_transform='upper',
+            highlight_color=highlight_color, base_color=base_color,
+            max_words_per_line=max_words, font_size=font_size,
+            base_font=base_font, highlight_font=highlight_font,
+            random_base_font=random_base_font, random_highlight_font=random_highlight_font,
+            random_base_color=random_base_color, random_highlight_color=random_highlight_color,
+            base_bold=base_bold, base_italic=base_italic,
+            highlight_bold=highlight_bold, highlight_italic=highlight_italic,
+            include_styling=True
+        )
+
+        variants["Minimal (Lowercase)"] = generate_srt_content(
+            segments, use_roman=True,
+            text_transform='lower',
+            include_styling=False
+        )
+
+        variants["Reels Style (2 Words per Line)"] = generate_srt_content(
+            segments, use_roman=True,
+            max_words_per_line=2,
+            highlight_color=highlight_color, base_color=base_color,
+            font_size=font_size,
+            base_font=base_font, highlight_font=highlight_font,
+            random_base_font=random_base_font, random_highlight_font=random_highlight_font,
+            random_base_color=random_base_color, random_highlight_color=random_highlight_color,
+            base_bold=base_bold, base_italic=base_italic,
+            highlight_bold=highlight_bold, highlight_italic=highlight_italic,
+            include_styling=True
+        )
+
+
+        # Selectbox for choosing variant
         selected_option = st.selectbox("Choose Subtitle Type:", list(variants.keys()))
-        srt_text = variants[selected_option]
 
-        with st.expander(f"📄 View Content: {selected_option}", expanded=True):
-            st.text_area("SRT Content", srt_text, height=300, label_visibility="collapsed")
+        # Handle the editable simple variant
+        if selected_option == "Simple (Editable)":
+            # Use edited version if available, otherwise original
+            default_text = st.session_state.get('edited_srt', variants[selected_option])
 
+            st.warning("⚠️ **Only edit the text lines.** Do **not** change timestamps (e.g., `00:01:23,456 --> 00:01:26,789`) or the numbers above each subtitle. Incorrect formatting may cause errors when burning the video.")
+
+            edited_text = st.text_area("Edit Subtitles (plain text only)", default_text, height=300, key="srt_editor")
+
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("💾 Save Edits"):
+                    st.session_state['edited_srt'] = edited_text
+                    st.success("Edits saved! They will be used for download and burning.")
+            with col2:
+                if st.button("↩️ Reset to Original"):
+                    if 'edited_srt' in st.session_state:
+                        del st.session_state['edited_srt']
+                    st.rerun()
+
+            # Use the edited text for further steps
+            srt_text = st.session_state.get('edited_srt', variants[selected_option])
+
+        else:
+            # For other variants, just show the generated content (non-editable)
+            srt_text = variants[selected_option]
+            with st.expander(f"📄 View Content: {selected_option}", expanded=True):
+                st.text_area("SRT Content", srt_text, height=300, label_visibility="collapsed", disabled=True)
+
+        # Download button (works for any variant, including edited)
+        st.download_button("⬇️ Download Selected SRT", srt_text, file_name="subtitles.srt")
+
+        # Save the current SRT to a file for burning
         srt_path = video_path + ".srt"
         with open(srt_path, "w", encoding="utf-8") as f:
             f.write(srt_text)
-
-        st.download_button("⬇️ Download Selected SRT", srt_text, file_name="subtitles.srt")
 
         # 4. Burn Video
         st.divider()
@@ -369,11 +499,13 @@ if uploaded_file is not None:
 
             with st.spinner("Burning subtitles & Saving to Folder..."):
                 try:
+                    # Save the two fixed variants (used for reference, not burning)
                     with open(dialogue_srt_path, "w", encoding="utf-8") as f:
                         f.write(variants["Standard (Romanized)"])
                     with open(karaoke_srt_path, "w", encoding="utf-8") as f:
                         f.write(variants["Karaoke (Highlighted)"])
 
+                    # Use the current srt_text (which may be edited) for burning
                     temp_srt_path = os.path.join(output_dir, "temp_burn.srt")
                     with open(temp_srt_path, "w", encoding="utf-8") as f:
                         f.write(srt_text)
@@ -387,7 +519,6 @@ if uploaded_file is not None:
 
                     ass_base_color = hex_to_ass(base_color)
 
-                    # Border
                     if border_enabled:
                         ass_border_color = hex_to_ass(border_color)
                         outline_width = border_width
@@ -395,7 +526,6 @@ if uploaded_file is not None:
                         ass_border_color = "&H00000000"
                         outline_width = 0
 
-                    # Shadow
                     if shadow_enabled:
                         ass_shadow_color = hex_to_ass(shadow_color)
                         shadow_dist = int(round(shadow_distance))
@@ -425,6 +555,8 @@ if uploaded_file is not None:
                     subs.save(ass_path)
 
                     escaped_ass_path = ass_path.replace("\\", "/").replace(":", "\\:").replace("'", "\\'")
+                    escaped_fonts_dir = CUSTOM_FONTS_DIR.replace("\\", "/").replace(":", "\\:").replace("'", "\\'")
+                    filter_str = f"ass='{escaped_ass_path}':fontsdir='{escaped_fonts_dir}'"
 
                     encoder = get_best_ffmpeg_encoder()
 
@@ -432,7 +564,7 @@ if uploaded_file is not None:
                         cmd = [
                             FFMPEG_PATH, "-y",
                             "-i", video_path,
-                            "-vf", f"ass='{escaped_ass_path}'",
+                            "-vf", filter_str,
                             "-c:v", enc, "-b:v", "8M",
                             "-c:a", "copy",
                             output_video_path

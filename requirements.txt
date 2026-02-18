@@ -5,3 +5,4 @@ pysubs2
 requests
 faster-whisper
 torch
+fonttools
