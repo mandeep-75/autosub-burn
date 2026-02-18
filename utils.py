@@ -1,6 +1,19 @@
 import random
+import platform
+import shutil
 from indic_transliteration import sanscript
 from datetime import timedelta
+
+def get_best_ffmpeg_encoder():
+    system = platform.system()
+    if system == "Darwin":
+        return "h264_videotoolbox"
+    
+    # Check for NVIDIA NVENC
+    if shutil.which("nvidia-smi"):
+        return "h264_nvenc"
+    
+    return "libx264" # Fallback to CPU
 
 AVAILABLE_FONTS = {
     'Arial': 'Arial', 

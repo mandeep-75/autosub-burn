@@ -4,7 +4,7 @@ import os
 import shutil
 import subprocess
 import json
-from utils import generate_srt_content, AVAILABLE_FONTS, parse_whisper_json, parse_srt_to_segments, merge_segments
+from utils import generate_srt_content, AVAILABLE_FONTS, parse_whisper_json, parse_srt_to_segments, merge_segments, get_best_ffmpeg_encoder
 
 # --- CONFIG ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -111,6 +111,7 @@ def main():
         "-l", "auto",
         "-t", "8",
         "-bs", "5",
+        "-ngl", "999",
         "-ml", "1",
         "-sow"
     ]
@@ -157,14 +158,19 @@ def main():
     style = f"FontName={tech_font},FontSize={args.font_size},PrimaryColour={ass_base},OutlineColour=&H000000,BorderStyle=1,Outline=2,Shadow=0,MarginV=50,Alignment=2"
     filter_str = f"subtitles=filename='{karaoke_path}':force_style='{style}'"
     
+    encoder = get_best_ffmpeg_encoder()
     cmd_burn = [
         FFMPEG_PATH, "-y", 
         "-i", original_video_in_output, 
         "-vf", filter_str,
-        "-c:v", "h264_videotoolbox", "-b:v", "8M", "-realtime", "1",
+        "-c:v", encoder, "-b:v", "8M",
         "-c:a", "copy",
         final_video_path
     ]
+    
+    if encoder == "h264_videotoolbox":
+        cmd_burn.insert(10, "-realtime")
+        cmd_burn.insert(11, "1")
     
     try:
         subprocess.run(cmd_burn, check=True)

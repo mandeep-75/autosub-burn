@@ -5,7 +5,7 @@ import subprocess
 import pysubs2
 import time
 from tempfile import NamedTemporaryFile
-from utils import AVAILABLE_FONTS, generate_srt_content, parse_whisper_json, parse_srt_to_segments, merge_segments
+from utils import AVAILABLE_FONTS, generate_srt_content, parse_whisper_json, parse_srt_to_segments, merge_segments, get_best_ffmpeg_encoder
 
 # --- CONFIG ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -185,6 +185,7 @@ if uploaded_file is not None:
                     "-l", "auto",
                     "-t", "8",
                     "-bs", "5",
+                    "-ngl", "999",
                     "-ml", str(char_limit),
                     "-sow"
                 ]
@@ -331,14 +332,19 @@ if uploaded_file is not None:
                     # 3. Burn with FFmpeg
                     escaped_ass_path = ass_path.replace("\\", "/").replace(":", "\\:").replace("'", "\\'")
                     
+                    encoder = get_best_ffmpeg_encoder()
                     cmd = [
                         FFMPEG_PATH, "-y", 
                         "-i", video_path, 
                         "-vf", f"ass='{escaped_ass_path}'",
-                        "-c:v", "h264_videotoolbox", "-b:v", "8M", "-realtime", "1",
+                        "-c:v", encoder, "-b:v", "8M",
                         "-c:a", "copy",
                         output_video_path
                     ]
+                    
+                    if encoder == "h264_videotoolbox":
+                        cmd.insert(10, "-realtime")
+                        cmd.insert(11, "1")
                     
                     subprocess.run(cmd, check=True, capture_output=True)
                     
