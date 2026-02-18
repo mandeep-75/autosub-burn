@@ -77,6 +77,24 @@ def get_best_ffmpeg_encoder():
         return "h264_nvenc"
     return "libx264"
 
+def transform_srt_case(srt_content, case_func):
+    """Transform only the subtitle text lines to uppercase/lowercase."""
+    blocks = srt_content.strip().split("\n\n")
+    transformed_blocks = []
+    for block in blocks:
+        lines = block.split("\n")
+        if len(lines) >= 3:
+            idx = lines[0]
+            times = lines[1]
+            # Text may be multi-line (e.g., if user added line breaks)
+            text = "\n".join(lines[2:])
+            transformed_text = case_func(text)
+            transformed_blocks.append(f"{idx}\n{times}\n{transformed_text}")
+        else:
+            # Keep malformed blocks unchanged
+            transformed_blocks.append(block)
+    return "\n\n".join(transformed_blocks)
+
 # --- MAIN APP ---
 st.set_page_config(page_title="Subtitle Refiner Bot", page_icon="🎬")
 
@@ -338,29 +356,23 @@ if uploaded_file is not None:
         segments = st.session_state['transcription_result']['segments']
         raw_segments = st.session_state['transcription_result']['raw_segments']
 
-        # Generate all variants (they are stored in a dictionary for later use)
+        # Generate only essential variants
         variants = {}
 
-        # --- Simple (Editable) - placed first ---
-        simple_original = generate_srt_content(
+        # Editable plain variants
+        variants["Romanised (Editable)"] = generate_srt_content(
             segments, use_roman=True, use_karaoke=False,
             max_words_per_line=max_words,
             include_styling=False
         )
-        variants["Simple (Editable)"] = simple_original
 
-        # --- Other variants (unchanged) ---
-        variants["Original (Auto-Detected)"] = generate_srt_content(
+        variants["Original (Editable)"] = generate_srt_content(
             segments, use_roman=False, use_karaoke=False,
-            highlight_color=highlight_color, base_color=base_color,
-            max_words_per_line=max_words, font_size=font_size,
-            base_font=base_font, highlight_font=highlight_font,
-            random_base_font=random_base_font, random_highlight_font=random_highlight_font,
-            random_base_color=random_base_color, random_highlight_color=random_highlight_color,
-            base_bold=base_bold, base_italic=base_italic,
-            highlight_bold=highlight_bold, highlight_italic=highlight_italic
+            max_words_per_line=max_words,
+            include_styling=False
         )
 
+        # Core styled variants
         variants["Standard (Romanized)"] = generate_srt_content(
             segments, use_roman=True, use_karaoke=False,
             highlight_color=highlight_color, base_color=base_color,
@@ -383,25 +395,6 @@ if uploaded_file is not None:
             highlight_bold=highlight_bold, highlight_italic=highlight_italic
         )
 
-        variants["Lip Sync (Word‑level) - Plain"] = generate_srt_content(
-            raw_segments, use_roman=True, use_karaoke=False,
-            max_words_per_line=1,
-            include_styling=False
-        )
-
-        variants["Lip Sync (Word‑level) Styled"] = generate_srt_content(
-            raw_segments, use_roman=True, use_karaoke=False,
-            max_words_per_line=1,
-            highlight_color=highlight_color, base_color=base_color,
-            font_size=font_size,
-            base_font=base_font, highlight_font=highlight_font,
-            random_base_font=random_base_font, random_highlight_font=random_highlight_font,
-            random_base_color=random_base_color, random_highlight_color=random_highlight_color,
-            base_bold=base_bold, base_italic=base_italic,
-            highlight_bold=highlight_bold, highlight_italic=highlight_italic,
-            include_styling=True
-        )
-
         variants["Bilingual (Original + Romanized)"] = generate_srt_content(
             segments, use_roman=True,
             show_original_and_roman=True,
@@ -415,28 +408,10 @@ if uploaded_file is not None:
             include_styling=True
         )
 
-        variants["Uppercase (Impact Style)"] = generate_srt_content(
-            segments, use_roman=True,
-            text_transform='upper',
-            highlight_color=highlight_color, base_color=base_color,
-            max_words_per_line=max_words, font_size=font_size,
-            base_font=base_font, highlight_font=highlight_font,
-            random_base_font=random_base_font, random_highlight_font=random_highlight_font,
-            random_base_color=random_base_color, random_highlight_color=random_highlight_color,
-            base_bold=base_bold, base_italic=base_italic,
-            highlight_bold=highlight_bold, highlight_italic=highlight_italic,
-            include_styling=True
-        )
-
-        variants["Minimal (Lowercase)"] = generate_srt_content(
-            segments, use_roman=True,
-            text_transform='lower',
-            include_styling=False
-        )
-
-        variants["Reels Style (2 Words per Line)"] = generate_srt_content(
-            segments, use_roman=True,
-            max_words_per_line=2,
+        # Only keep the styled lip sync variant (plain removed)
+        variants["Lip Sync (Word‑level)"] = generate_srt_content(
+            raw_segments, use_roman=True, use_karaoke=False,
+            max_words_per_line=1,
             highlight_color=highlight_color, base_color=base_color,
             font_size=font_size,
             base_font=base_font, highlight_font=highlight_font,
@@ -447,32 +422,54 @@ if uploaded_file is not None:
             include_styling=True
         )
 
+        # Define which variants are editable (plain text only)
+        EDITABLE_VARIANTS = ["Romanised (Editable)", "Original (Editable)"]
 
         # Selectbox for choosing variant
         selected_option = st.selectbox("Choose Subtitle Type:", list(variants.keys()))
 
-        # Handle the editable simple variant
-        if selected_option == "Simple (Editable)":
-            # Use edited version if available, otherwise original
-            default_text = st.session_state.get('edited_srt', variants[selected_option])
+        # Initialize edited_srt as a dictionary if not present
+        if 'edited_srt' not in st.session_state:
+            st.session_state.edited_srt = {}
+
+        # Handle editable variants
+        if selected_option in EDITABLE_VARIANTS:
+            default_text = st.session_state.edited_srt.get(selected_option, variants[selected_option])
 
             st.warning("⚠️ **Only edit the text lines.** Do **not** change timestamps (e.g., `00:01:23,456 --> 00:01:26,789`) or the numbers above each subtitle. Incorrect formatting may cause errors when burning the video.")
 
             edited_text = st.text_area("Edit Subtitles (plain text only)", default_text, height=300, key="srt_editor")
 
-            col1, col2 = st.columns(2)
-            with col1:
+            # Uppercase / Lowercase buttons
+            col_upper, col_lower, col_save, col_reset = st.columns([1, 1, 1, 1])
+            with col_upper:
+                if st.button("⬆️ Uppercase"):
+                    if st.session_state.get("srt_editor"):
+                        current = st.session_state["srt_editor"]
+                        transformed = transform_srt_case(current, str.upper)
+                        st.session_state["srt_editor"] = transformed
+                        st.session_state.edited_srt[selected_option] = transformed
+                        st.rerun()
+            with col_lower:
+                if st.button("⬇️ Lowercase"):
+                    if st.session_state.get("srt_editor"):
+                        current = st.session_state["srt_editor"]
+                        transformed = transform_srt_case(current, str.lower)
+                        st.session_state["srt_editor"] = transformed
+                        st.session_state.edited_srt[selected_option] = transformed
+                        st.rerun()
+            with col_save:
                 if st.button("💾 Save Edits"):
-                    st.session_state['edited_srt'] = edited_text
+                    st.session_state.edited_srt[selected_option] = st.session_state["srt_editor"]
                     st.success("Edits saved! They will be used for download and burning.")
-            with col2:
+            with col_reset:
                 if st.button("↩️ Reset to Original"):
-                    if 'edited_srt' in st.session_state:
-                        del st.session_state['edited_srt']
+                    if selected_option in st.session_state.edited_srt:
+                        del st.session_state.edited_srt[selected_option]
                     st.rerun()
 
             # Use the edited text for further steps
-            srt_text = st.session_state.get('edited_srt', variants[selected_option])
+            srt_text = st.session_state.edited_srt.get(selected_option, variants[selected_option])
 
         else:
             # For other variants, just show the generated content (non-editable)
