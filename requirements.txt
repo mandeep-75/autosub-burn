@@ -4,3 +4,4 @@ numpy
 pysubs2
 requests
 faster-whisper
+torch
