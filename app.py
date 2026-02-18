@@ -39,7 +39,9 @@ def get_best_ffmpeg_encoder():
 st.set_page_config(page_title="Subtitle Refiner Bot", page_icon="🎬")
 
 st.title("🎬 AI Subtitle Generator & Refiner")
-st.markdown("Automated captions with **Roman Hindi/Punjabi** transliteration and **Karaoke Highlights**.")
+st.markdown("""Automated captions with **Roman Hindi/Punjabi** transliteration and **Karaoke Highlights**.
+if using on streamlit cloud please auto and tiny model only
+""")
 
 # Sidebar Configuration
 with st.sidebar:
