@@ -3,3 +3,4 @@ indic-transliteration
 numpy
 pysubs2
 requests
+faster-whisper
