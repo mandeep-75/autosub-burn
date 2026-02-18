@@ -4,7 +4,7 @@ import os
 import shutil
 import subprocess
 import json
-from utils import generate_srt_content, AVAILABLE_FONTS, parse_whisper_json, parse_srt_to_segments, merge_segments, get_best_ffmpeg_encoder
+from utils import generate_srt_content, AVAILABLE_FONTS, parse_whisper_json, parse_srt_to_segments, merge_segments, get_best_ffmpeg_encoder, get_whisper_gpu_args
 
 # --- CONFIG ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -111,10 +111,10 @@ def main():
         "-l", "auto",
         "-t", "8",
         "-bs", "5",
-        "-ngl", "999",
         "-ml", "1",
         "-sow"
     ]
+    cmd.extend(get_whisper_gpu_args())
     
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
@@ -127,6 +127,8 @@ def main():
         segments = parse_srt_to_segments(srt_out_path)
     else:
         print("❌ Error: No subtitle output found.")
+        print(f"DEBUG - stderr: {result.stderr}")
+        print(f"DEBUG - stdout: {result.stdout}")
         return
     
     # Merge for display

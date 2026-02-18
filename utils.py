@@ -15,6 +15,17 @@ def get_best_ffmpeg_encoder():
     
     return "libx264" # Fallback to CPU
 
+def get_whisper_gpu_args():
+    """Returns GPU-specific flags for whisper-cli. 
+    On Mac, Metal is usually auto-enabled. On Linux, NVIDIA needs -ngl."""
+    if platform.system() == "Darwin":
+        return [] # Mac uses Metal by default, -ngl is often not supported or needed
+    
+    if shutil.which("nvidia-smi"):
+        return ["-ngl", "999"] # Use all GPU layers on NVIDIA
+        
+    return []
+
 AVAILABLE_FONTS = {
     'Arial': 'Arial', 
     'Arial Black': 'Arial-Black', 

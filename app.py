@@ -5,7 +5,7 @@ import subprocess
 import pysubs2
 import time
 from tempfile import NamedTemporaryFile
-from utils import AVAILABLE_FONTS, generate_srt_content, parse_whisper_json, parse_srt_to_segments, merge_segments, get_best_ffmpeg_encoder
+from utils import AVAILABLE_FONTS, generate_srt_content, parse_whisper_json, parse_srt_to_segments, merge_segments, get_best_ffmpeg_encoder, get_whisper_gpu_args
 
 # --- CONFIG ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -185,10 +185,10 @@ if uploaded_file is not None:
                     "-l", "auto",
                     "-t", "8",
                     "-bs", "5",
-                    "-ngl", "999",
                     "-ml", str(char_limit),
                     "-sow"
                 ]
+                cmd.extend(get_whisper_gpu_args())
                 
                 result = subprocess.run(cmd, capture_output=True, text=True)
                 if result.returncode != 0:
@@ -209,6 +209,10 @@ if uploaded_file is not None:
                     segments = parse_whisper_json(data)
                 else:
                     st.error("❌ Failed to generate subtitle output.")
+                    if result.stderr:
+                        st.info(f"Debug Info (stderr): {result.stderr}")
+                    if result.stdout:
+                        st.info(f"Debug Info (stdout): {result.stdout}")
                     st.stop()
                 
                 # Merge individual word segments back into lines based on max_words setting
