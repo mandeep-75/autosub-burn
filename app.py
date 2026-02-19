@@ -100,7 +100,7 @@ st.set_page_config(page_title="Subtitle Refiner Bot", page_icon="🎬")
 
 st.title("🎬 AI Subtitle Generator & Refiner")
 st.markdown("""Automated captions with **Roman Hindi/Punjabi** transliteration and **Karaoke Highlights**.
-If using on Streamlit Cloud, please use 'auto' device and 'tiny' model only.
+Say thx to Mandeep for this amazing tool.
 """)
 
 # Sidebar Configuration
@@ -137,6 +137,52 @@ with st.sidebar:
         index=1
     )
     model_size = [k for k, v in model_options.items() if v == selected_label][0]
+
+    # Language selection (new)
+    language_options = {
+        "Auto (detect)": None,
+        "Hindi": "hi",
+        "Punjabi": "pa",
+        "English": "en",
+        "Spanish": "es",
+        "French": "fr",
+        "German": "de",
+        "Italian": "it",
+        "Portuguese": "pt",
+        "Russian": "ru",
+        "Japanese": "ja",
+        "Chinese": "zh",
+        "Arabic": "ar",
+        "Bengali": "bn",
+        "Urdu": "ur",
+        "Tamil": "ta",
+        "Telugu": "te",
+        "Marathi": "mr",
+        "Gujarati": "gu",
+        "Kannada": "kn",
+        "Malayalam": "ml",
+        "Oriya": "or",
+        "Assamese": "as",
+        "Maithili": "mai",
+        "Sindhi": "sd",
+        "Nepali": "ne",
+        "Sinhala": "si",
+        "Khmer": "km",
+        "Lao": "lo",
+        "Thai": "th",
+        "Vietnamese": "vi",
+        "Indonesian": "id",
+        "Malay": "ms",
+        "Tagalog": "tl",
+        "Burmese": "my",
+    }
+    selected_lang_label = st.selectbox(
+        "Language",
+        options=list(language_options.keys()),
+        index=0,
+        help="Select the language of the audio, or leave as Auto for detection."
+    )
+    selected_language_code = language_options[selected_lang_label]
 
     device_choice = st.radio(
         "Processing device",
@@ -309,7 +355,7 @@ if uploaded_file is not None:
                 segments_generator, info = model.transcribe(
                     temp_audio,
                     word_timestamps=True,
-                    language=None,
+                    language=selected_language_code,  # use selected language (None for auto)
                     task="transcribe",
                     beam_size=5,
                     best_of=5,
@@ -531,7 +577,7 @@ if uploaded_file is not None:
                         segments, use_roman=False, use_karaoke=False,
                         max_words_per_line=max_words, include_styling=False
                     )
-            elif variant == "Standard (Romanized)":
+            elif variant == "Styled (Romanized)":
                 if use_edited:
                     # Use edited segments (which have only basic text, no words)
                     return generate_srt_content(
@@ -638,7 +684,7 @@ if uploaded_file is not None:
                 try:
                     # Save the two fixed variants (used for reference, not burning)
                     with open(dialogue_srt_path, "w", encoding="utf-8") as f:
-                        f.write(get_final_srt("Standard (Romanized)"))
+                        f.write(get_final_srt("Styled (Romanized)"))
                     with open(karaoke_srt_path, "w", encoding="utf-8") as f:
                         f.write(get_final_srt("Karaoke (Highlighted)"))
 
@@ -716,7 +762,7 @@ if uploaded_file is not None:
                         subprocess.run(cmd, check=True, capture_output=True)
                     except subprocess.CalledProcessError as e:
                         if encoder in ["h264_nvenc", "h264_videotoolbox"]:
-                            st.warning(f"{encoder} failed, falling back to software encoder (libx264). This may be slower.")
+                            st.warning(f"{encoder} failed, falling back to software encoder (libx264). This may be slower due to the uploaded video codec being out of reach of NVIDIA. It is recommended that you don't use 10-bit video for this app.")
                             cmd = build_cmd("libx264")
                             subprocess.run(cmd, check=True, capture_output=True)
                         else:
