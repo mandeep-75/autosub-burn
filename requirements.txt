@@ -1,5 +1,5 @@
 streamlit
-indic-transliteration
-numpy
 pysubs2
+indic-transliteration
+fonttools
 requests

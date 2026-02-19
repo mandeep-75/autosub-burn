@@ -1,3 +1,5 @@
+## currently broken
+
 # 🎬 Subtitling Tool
 
 Automatically generate subtitles for your videos using Whisper. Choose between local CPU-powered transcription or GPU-accelerated processing (via Google Colab).
