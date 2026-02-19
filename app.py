@@ -212,33 +212,32 @@ with st.sidebar:
         random_highlight_color = st.checkbox("Random Highlight Color")
 
     st.divider()
-    # --- Text Case Transformation (now uses the single editor in Step 2) ---
-    with st.expander("✏️ Text Case Transformation", expanded=False):
+    # --- Text Case Transformation (updates widget key directly) ---
+    with st.expander("✏️ Text Case Transformation", expanded=True):
         st.markdown("Apply uppercase/lowercase to the subtitle text currently shown in Step 2.")
 
         if st.button("⬆️ UPPERCASE", use_container_width=True):
             if "srt_editor_editable" in st.session_state:
                 current = st.session_state["srt_editor_editable"]
                 transformed = transform_srt_case(current, str.upper)
-                # Determine which variant is being edited
                 variant = st.session_state.get("edit_choice", "Romanised (Editable)")
+                # Update both the widget state and the persistent storage
+                st.session_state["srt_editor_editable"] = transformed
                 st.session_state.edited_srt[variant] = transformed
-                # Delete the widget key so it re‑creates with the new value
-                del st.session_state["srt_editor_editable"]
-                st.rerun()
+                st.success(f"Converted to UPPERCASE for {variant}. Click Save Edits to keep changes.")
 
         if st.button("⬇️ lowercase", use_container_width=True):
             if "srt_editor_editable" in st.session_state:
                 current = st.session_state["srt_editor_editable"]
                 transformed = transform_srt_case(current, str.lower)
                 variant = st.session_state.get("edit_choice", "Romanised (Editable)")
+                st.session_state["srt_editor_editable"] = transformed
                 st.session_state.edited_srt[variant] = transformed
-                del st.session_state["srt_editor_editable"]
-                st.rerun()
+                st.success(f"Converted to lowercase for {variant}. Click Save Edits to keep changes.")
 
     st.divider()
     if st.button("🧹 Clear Memory & Reset"):
-        keys_to_clear = ['transcription_result', 'video_path', 'output_dir', 'video_name', 'last_uploaded_filename', 'edited_srt']
+        keys_to_clear = ['transcription_result', 'video_path', 'output_dir', 'video_name', 'last_uploaded_filename', 'edited_srt', 'srt_editor_editable', 'last_edit_choice']
         for k in keys_to_clear:
             if k in st.session_state:
                 del st.session_state[k]
@@ -303,7 +302,7 @@ if uploaded_file is not None:
                     device=device,
                     compute_type=compute_type,
                     download_root=None,
-                    cpu_threads=4 if device == "cpu" else 0,
+                    cpu_threads=8 if device == "cpu" else 0,
                     num_workers=1
                 )
 
@@ -419,19 +418,61 @@ if uploaded_file is not None:
             key="edit_choice"
         )
 
-        # Text area for editing the chosen variant
-        default_text = st.session_state.edited_srt[edit_choice]
+        # Manage the editor's session state when variant changes
+        if "last_edit_choice" not in st.session_state:
+            st.session_state.last_edit_choice = edit_choice
+
+        if st.session_state.last_edit_choice != edit_choice:
+            # Variant changed, update editor content to the saved text for the new variant
+            st.session_state["srt_editor_editable"] = st.session_state.edited_srt[edit_choice]
+            st.session_state.last_edit_choice = edit_choice
+
+        # Initialize editor if not present
+        if "srt_editor_editable" not in st.session_state:
+            st.session_state["srt_editor_editable"] = st.session_state.edited_srt[edit_choice]
+
+        # Text area for editing
         edited_text = st.text_area(
             f"Edit {edit_choice} (plain text only)",
-            default_text,
-            height=300,
-            key="srt_editor_editable"
+            key="srt_editor_editable",
+            height=300
         )
 
         # Save button
         if st.button("💾 Save Edits", key="save_edits"):
-            st.session_state.edited_srt[edit_choice] = edited_text
+            st.session_state.edited_srt[edit_choice] = st.session_state["srt_editor_editable"]
             st.success(f"Edits saved for {edit_choice}!")
+
+        # ------------------------------------------------------------
+        # Helper to apply Romanised edits to segment list
+        def apply_edits_to_segments(edited_srt, original_segments):
+            """
+            Replaces the text in original_segments with the text from edited_srt.
+            Assumes the same number of subtitle blocks and same timings.
+            Returns a new list of segments (each segment has 'start', 'end', and 'text').
+            """
+            blocks = edited_srt.strip().split("\n\n")
+            if len(blocks) != len(original_segments):
+                # Mismatch – fall back to original
+                return original_segments
+
+            new_segments = []
+            for i, block in enumerate(blocks):
+                lines = block.split("\n")
+                if len(lines) >= 3:
+                    # Text may be multi-line; join with spaces for a single line
+                    text = " ".join(lines[2:]).strip()
+                else:
+                    text = ""
+                # Copy timing from original
+                new_segments.append({
+                    "start": original_segments[i]["start"],
+                    "end": original_segments[i]["end"],
+                    "text": text,
+                    # For simplicity, we don't add word-level info here
+                })
+            return new_segments
+        # ------------------------------------------------------------
 
         # Step 3: Choose final style and burn
         st.divider()
@@ -439,14 +480,15 @@ if uploaded_file is not None:
 
         st.markdown("""
         **Note:** If you select *Romanised (Editable)* or *Original (Editable)*, the burned subtitles will use the text you edited in Step 2.  
-        All other styles are generated on the fly using the current settings.
+        For *Standard* and *Bilingual* styles, if you edited the Romanised version, those edits will be used (timings preserved).  
+        *Karaoke* and *Lip Sync* always use the original transcription to maintain word‑level highlighting.
         """)
 
         # List of all possible subtitle types
         variant_names = [
             "Romanised (Editable)",
             "Original (Editable)",
-            "Standard (Romanized)",
+            "Styled (Romanized)",
             "Karaoke (Highlighted)",
             "Bilingual (Original + Romanized)",
             "Lip Sync (Word‑level)"
@@ -456,8 +498,24 @@ if uploaded_file is not None:
 
         # Helper to get the final SRT content based on selection
         def get_final_srt(variant):
+            # Determine if we should use edited Romanised text for certain variants
+            use_edited = False
+            edited_segments = None
+            if "Romanised (Editable)" in st.session_state.edited_srt:
+                edited_text = st.session_state.edited_srt["Romanised (Editable)"]
+                # Check if it differs from the original romanised text
+                original_roman = generate_srt_content(
+                    segments, use_roman=True, use_karaoke=False,
+                    max_words_per_line=max_words, include_styling=False
+                )
+                if edited_text != original_roman:
+                    # Try to apply edits
+                    edited_segments = apply_edits_to_segments(edited_text, segments)
+                    if edited_segments is not None:
+                        use_edited = True
+
             if variant == "Romanised (Editable)":
-                # Use edited version if available, else generate fresh
+                # Return edited version if available, else generate fresh
                 if "Romanised (Editable)" in st.session_state.edited_srt:
                     return st.session_state.edited_srt["Romanised (Editable)"]
                 else:
@@ -474,54 +532,84 @@ if uploaded_file is not None:
                         max_words_per_line=max_words, include_styling=False
                     )
             elif variant == "Standard (Romanized)":
-                return generate_srt_content(
-                    segments, use_roman=True, use_karaoke=False,
-                    highlight_color=highlight_color, base_color=base_color,
-                    max_words_per_line=max_words, font_size=font_size,
-                    base_font=base_font, highlight_font=highlight_font,
-                    random_base_font=random_base_font, random_highlight_font=random_highlight_font,
-                    random_base_color=random_base_color, random_highlight_color=random_highlight_color,
-                    base_bold=base_bold, base_italic=base_italic,
-                    highlight_bold=highlight_bold, highlight_italic=highlight_italic,
-                    include_styling=True
-                )
+                if use_edited:
+                    # Use edited segments (which have only basic text, no words)
+                    return generate_srt_content(
+                        edited_segments, use_roman=True, use_karaoke=False,
+                        max_words_per_line=max_words, font_size=font_size,
+                        base_font=base_font, highlight_font=highlight_font,
+                        random_base_font=random_base_font, random_highlight_font=random_highlight_font,
+                        random_base_color=random_base_color, random_highlight_color=random_highlight_color,
+                        base_bold=base_bold, base_italic=base_italic,
+                        highlight_bold=highlight_bold, highlight_italic=highlight_italic,
+                        include_styling=True,
+                        highlight_color=highlight_color, base_color=base_color
+                    )
+                else:
+                    return generate_srt_content(
+                        segments, use_roman=True, use_karaoke=False,
+                        max_words_per_line=max_words, font_size=font_size,
+                        base_font=base_font, highlight_font=highlight_font,
+                        random_base_font=random_base_font, random_highlight_font=random_highlight_font,
+                        random_base_color=random_base_color, random_highlight_color=random_highlight_color,
+                        base_bold=base_bold, base_italic=base_italic,
+                        highlight_bold=highlight_bold, highlight_italic=highlight_italic,
+                        include_styling=True,
+                        highlight_color=highlight_color, base_color=base_color
+                    )
             elif variant == "Karaoke (Highlighted)":
+                # Always use original segments (word-level required)
                 return generate_srt_content(
                     segments, use_roman=True, use_karaoke=True,
-                    highlight_color=highlight_color, base_color=base_color,
                     max_words_per_line=max_words, font_size=font_size,
                     base_font=base_font, highlight_font=highlight_font,
                     random_base_font=random_base_font, random_highlight_font=random_highlight_font,
                     random_base_color=random_base_color, random_highlight_color=random_highlight_color,
                     base_bold=base_bold, base_italic=base_italic,
                     highlight_bold=highlight_bold, highlight_italic=highlight_italic,
-                    include_styling=True
+                    include_styling=True,
+                    highlight_color=highlight_color, base_color=base_color
                 )
             elif variant == "Bilingual (Original + Romanized)":
-                return generate_srt_content(
-                    segments, use_roman=True,
-                    show_original_and_roman=True,
-                    highlight_color=highlight_color, base_color=base_color,
-                    max_words_per_line=max_words, font_size=font_size,
-                    base_font=base_font, highlight_font=highlight_font,
-                    random_base_font=random_base_font, random_highlight_font=random_highlight_font,
-                    random_base_color=random_base_color, random_highlight_color=random_highlight_color,
-                    base_bold=base_bold, base_italic=base_italic,
-                    highlight_bold=highlight_bold, highlight_italic=highlight_italic,
-                    include_styling=True
-                )
+                if use_edited:
+                    return generate_srt_content(
+                        edited_segments, use_roman=True,
+                        show_original_and_roman=True,
+                        max_words_per_line=max_words, font_size=font_size,
+                        base_font=base_font, highlight_font=highlight_font,
+                        random_base_font=random_base_font, random_highlight_font=random_highlight_font,
+                        random_base_color=random_base_color, random_highlight_color=random_highlight_color,
+                        base_bold=base_bold, base_italic=base_italic,
+                        highlight_bold=highlight_bold, highlight_italic=highlight_italic,
+                        include_styling=True,
+                        highlight_color=highlight_color, base_color=base_color
+                    )
+                else:
+                    return generate_srt_content(
+                        segments, use_roman=True,
+                        show_original_and_roman=True,
+                        max_words_per_line=max_words, font_size=font_size,
+                        base_font=base_font, highlight_font=highlight_font,
+                        random_base_font=random_base_font, random_highlight_font=random_highlight_font,
+                        random_base_color=random_base_color, random_highlight_color=random_highlight_color,
+                        base_bold=base_bold, base_italic=base_italic,
+                        highlight_bold=highlight_bold, highlight_italic=highlight_italic,
+                        include_styling=True,
+                        highlight_color=highlight_color, base_color=base_color
+                    )
             elif variant == "Lip Sync (Word‑level)":
+                # Always use original raw_segments (word-level required)
                 return generate_srt_content(
                     raw_segments, use_roman=True, use_karaoke=False,
                     max_words_per_line=1,
-                    highlight_color=highlight_color, base_color=base_color,
                     font_size=font_size,
                     base_font=base_font, highlight_font=highlight_font,
                     random_base_font=random_base_font, random_highlight_font=random_highlight_font,
                     random_base_color=random_base_color, random_highlight_color=random_highlight_color,
                     base_bold=base_bold, base_italic=base_italic,
                     highlight_bold=highlight_bold, highlight_italic=highlight_italic,
-                    include_styling=True
+                    include_styling=True,
+                    highlight_color=highlight_color, base_color=base_color
                 )
             else:
                 return ""
