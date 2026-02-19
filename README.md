@@ -9,20 +9,6 @@ Choose between:
 - Whisper.cpp can't be compiled on colab with free tier.
 ---
 
-## 🚀 Run Locally (macOS / Linux)
-
-🍎 **Mac users → Use the `main` branch (whisper.cpp – CPU mode)**
-
-### 🛠 Installation
-
-```bash
-git clone https://github.com/your-username/subtitling-tool.git
-cd subtitling-tool
-pip install -r requirements.txt
-streamlit run app.py
-```
-
----
 
 ## ☁️ Google Colab (GPU Mode)
 
@@ -55,19 +41,26 @@ streamlit run app.py
 
 ---
 
-## 📂 Project Structure
+
+## 🚀 Run Locally (macOS / Linux)
+
+🍎 **Mac users → Use the `main` branch (whisper.cpp – CPU mode)**  
+
+> ⚠️ `whisper.cpp` must be compiled from source before running the app.
+
+### 🛠 Installation
 
 ```bash
-subtitling-tool/
-├── app.py
-├── requirements.txt
-├── colab/
-│   └── subtitles.ipynb
-├── tools/
-├── outputs/
-└── README.md
-```
+# 1️⃣ Clone the repository
+git clone https://github.com/mandeep-75/subtitling-tool.git
+cd subtitling-tool
 
+# 2️⃣ Install Python dependencies
+pip install -r requirements.txt
+
+# 3️⃣ Run the Streamlit app
+streamlit run app.py
+```
 ---
 
 ## 🤝 Contributing
