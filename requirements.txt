@@ -6,3 +6,4 @@ requests
 faster-whisper
 torch
 fonttools
+watchdog
