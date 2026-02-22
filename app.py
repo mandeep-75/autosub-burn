@@ -8,9 +8,9 @@ import faster_whisper
 import platform
 import gc
 import glob
+import random
 from typing import List, Dict, Optional, Tuple
 from utils import AVAILABLE_FONTS, generate_srt_content, merge_segments
-
 # Optional: memory debugging
 try:
     import psutil
@@ -634,14 +634,16 @@ if uploaded_file is not None:
                 segs = segments
                 caption = "ℹ️ Using original transcription."
 
-            # Generate SRT with appropriate parameters
+            # Generate SRT with appropriate parameters, passing the original flags
             if variant == "Styled (Romanized)":
                 srt = generate_srt_content(
                     segs, use_roman=True, use_karaoke=False,
                     max_words_per_line=max_words, font_size=font_size,
                     base_font=base_font, highlight_font=highlight_font,
-                    random_base_font=random_base_font, random_highlight_font=random_highlight_font,
-                    random_base_color=random_base_color, random_highlight_color=random_highlight_color,
+                    random_base_font=random_base_font,
+                    random_highlight_font=random_highlight_font,
+                    random_base_color=random_base_color,
+                    random_highlight_color=random_highlight_color,
                     base_bold=base_bold, base_italic=base_italic,
                     highlight_bold=highlight_bold, highlight_italic=highlight_italic,
                     include_styling=True,
@@ -652,23 +654,25 @@ if uploaded_file is not None:
                     segs, use_roman=True, use_karaoke=True,
                     max_words_per_line=max_words, font_size=font_size,
                     base_font=base_font, highlight_font=highlight_font,
-                    random_base_font=random_base_font, random_highlight_font=random_highlight_font,
-                    random_base_color=random_base_color, random_highlight_color=random_highlight_color,
+                    random_base_font=random_base_font,
+                    random_highlight_font=random_highlight_font,
+                    random_base_color=random_base_color,
+                    random_highlight_color=random_highlight_color,
                     base_bold=base_bold, base_italic=base_italic,
                     highlight_bold=highlight_bold, highlight_italic=highlight_italic,
                     include_styling=True,
                     highlight_color=highlight_color, base_color=base_color
                 )
             elif variant == "Bilingual (Original + Romanized)":
-                # Note: This requires generate_srt_content in utils.py to support show_original_and_roman.
-                # If not, you'll need to modify it or use a placeholder.
                 srt = generate_srt_content(
                     segs, use_roman=True,
                     show_original_and_roman=True,
                     max_words_per_line=max_words, font_size=font_size,
                     base_font=base_font, highlight_font=highlight_font,
-                    random_base_font=random_base_font, random_highlight_font=random_highlight_font,
-                    random_base_color=random_base_color, random_highlight_color=random_highlight_color,
+                    random_base_font=random_base_font,
+                    random_highlight_font=random_highlight_font,
+                    random_base_color=random_base_color,
+                    random_highlight_color=random_highlight_color,
                     base_bold=base_bold, base_italic=base_italic,
                     highlight_bold=highlight_bold, highlight_italic=highlight_italic,
                     include_styling=True,
@@ -680,8 +684,10 @@ if uploaded_file is not None:
                     max_words_per_line=1,
                     font_size=font_size,
                     base_font=base_font, highlight_font=highlight_font,
-                    random_base_font=random_base_font, random_highlight_font=random_highlight_font,
-                    random_base_color=random_base_color, random_highlight_color=random_highlight_color,
+                    random_base_font=random_base_font,
+                    random_highlight_font=random_highlight_font,
+                    random_base_color=random_base_color,
+                    random_highlight_color=random_highlight_color,
                     base_bold=base_bold, base_italic=base_italic,
                     highlight_bold=highlight_bold, highlight_italic=highlight_italic,
                     include_styling=True,
@@ -819,4 +825,8 @@ if uploaded_file is not None:
                             os.remove(srt_path)
                         except:
                             pass
+                    # Flush CUDA cache after video processing
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
+                        torch.cuda.ipc_collect()
                     gc.collect()
