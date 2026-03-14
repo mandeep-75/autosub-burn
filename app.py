@@ -24,7 +24,6 @@ try:
     FONTTOOLS_AVAILABLE = True
 except ImportError:
     FONTTOOLS_AVAILABLE = False
-    st.warning("fontTools not installed. Custom font names will be based on filenames.")
 
 # --- CONFIGURATION ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -41,7 +40,6 @@ elif SYSTEM_FFMPEG:
     FFMPEG_PATH = SYSTEM_FFMPEG
 else:
     FFMPEG_PATH = "ffmpeg"
-    st.error("FFmpeg not found. Please install FFmpeg and ensure it's in PATH or place it in the tools/ directory.")
 
 # --- HELPER FUNCTIONS (local) ---
 def get_font_family(font_path: str) -> str:
