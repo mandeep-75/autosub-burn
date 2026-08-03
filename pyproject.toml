@@ -1,0 +1,16 @@
+[project]
+name = "subtitle-editor-tool"
+version = "0.1.0"
+description = "Streamlit-based subtitle editor with transcription and transliteration"
+requires-python = ">=3.11"
+dependencies = [
+    "streamlit",
+    "indic-transliteration",
+    "numpy",
+    "pysubs2",
+    "requests",
+    "faster-whisper",
+    "torch",
+    "fonttools",
+    "watchdog",
+]
